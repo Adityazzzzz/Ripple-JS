@@ -397,6 +397,7 @@ export function updateIfDirty(node: ReactiveNode): boolean {
     const computeNode = node as ReactiveNode & {
       _compute: () => unknown;
       _value: unknown;
+      _initialized: boolean;
       _equals: (a: unknown, b: unknown) => boolean;
     };
 
@@ -405,10 +406,11 @@ export function updateIfDirty(node: ReactiveNode): boolean {
 
     try {
       const newValue = computeNode._compute();
-      const changed = !computeNode._equals(computeNode._value, newValue);
+      const changed = !computeNode._initialized || !computeNode._equals(computeNode._value, newValue);
 
       if (changed) {
         computeNode._value = newValue;
+        computeNode._initialized = true;
       }
 
       node._state = CLEAN;

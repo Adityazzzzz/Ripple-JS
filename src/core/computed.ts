@@ -21,6 +21,7 @@ class ComputedNode<T> implements ReactiveNode {
   _version = 0;
 
   _value: T = undefined!;
+  _initialized = false;
   _compute: () => T;
   _equals: (a: T, b: T) => boolean;
 
@@ -74,10 +75,13 @@ function updateComputed<T>(node: ComputedNode<T>): void {
 
     try {
       const newValue = node._compute();
-      const changed = !node._equals(node._value, newValue);
+
+      // Skip equality check on first computation (value is uninitialized)
+      const changed = !node._initialized || !node._equals(node._value, newValue);
 
       if (changed) {
         node._value = newValue;
+        node._initialized = true;
         node._version++;
 
         // Propagate to subscribers if value changed
@@ -96,6 +100,7 @@ function updateComputed<T>(node: ComputedNode<T>): void {
     }
   }
 }
+
 
 /**
  * Create a computed (derived) reactive value.
