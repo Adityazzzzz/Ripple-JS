@@ -9,7 +9,7 @@ import { setCurrentScope, getCurrentScope } from './effect.js';
  * it are automatically cleaned up.
  */
 class ScopeNode {
-  private _children: Array<{ _dispose(): void }> = [];
+  private _children: Array<{ _dispose?(): void; dispose?(): void }> = [];
   private _cleanups: Array<() => void> = [];
   private _disposed = false;
   private _parent: ScopeNode | null = null;
@@ -43,7 +43,12 @@ class ScopeNode {
     const children = this._children;
     for (let i = children.length - 1; i >= 0; i--) {
       try {
-        children[i]._dispose();
+        const child = children[i];
+        if (child._dispose) {
+          child._dispose();
+        } else if (child.dispose) {
+          child.dispose();
+        }
       } catch (err) {
         console.error('Ripple.js: Error during scope disposal:', err);
       }
@@ -77,7 +82,7 @@ class ScopeNode {
    * Add a child node (effect or nested scope) to this scope.
    * @internal
    */
-  _addChild(child: { _dispose(): void }): void {
+  _addChild(child: { _dispose?(): void; dispose?(): void }): void {
     this._children.push(child);
   }
 
@@ -86,7 +91,7 @@ class ScopeNode {
    * Called when a child is independently disposed.
    * @internal
    */
-  _removeChild(child: { _dispose(): void }): void {
+  _removeChild(child: { _dispose?(): void; dispose?(): void }): void {
     const idx = this._children.indexOf(child);
     if (idx !== -1) {
       this._children.splice(idx, 1);
