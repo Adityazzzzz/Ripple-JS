@@ -20,7 +20,7 @@ export type {
 
 export { SignalBrand, ComputedBrand } from './core/types.js';
 
-// Core primitives will be added as they're implemented:
+// Core primitives
 export { signal } from './core/signal.js';
 export { computed } from './core/computed.js';
 export { effect, onCleanup } from './core/effect.js';
@@ -28,12 +28,40 @@ export { batch } from './core/batch.js';
 export { untrack } from './core/untrack.js';
 export { createScope, onDispose } from './core/scope.js';
 
+// Type guards
+export { isSignal, isComputed, isReactive } from './core/is.js';
+
+// Readonly wrapper
+export { readonly } from './core/readonly.js';
+
 // Utilities
 export { watch } from './utils/watch.js';
 export type { WatchOptions } from './utils/watch.js';
 export { on } from './utils/on.js';
 export type { OnOptions } from './utils/on.js';
 export { toJSON } from './utils/toJSON.js';
+export { memo } from './utils/memo.js';
+export { derive } from './utils/derive.js';
+export { subscribe } from './utils/subscribe.js';
+export { previous } from './utils/previous.js';
+export { debouncedEffect, debouncedSignal } from './utils/debounced.js';
+
+// Async resources
+export { resource } from './utils/resource.js';
+export type { Resource, ResourceOptions } from './utils/resource.js';
+
+// State management
+export { createStore } from './utils/store.js';
+export type { StoreDefinition, Store } from './utils/store.js';
+
+// History / undo-redo
+export { createHistory } from './utils/history.js';
+export type { History, HistoryOptions } from './utils/history.js';
+
+// Persistence
+export { persistedSignal } from './utils/storage.js';
+export type { PersistedSignalOptions } from './utils/storage.js';
+
 // DevTools (tree-shaken in production)
 export {
   getSubscribers,
