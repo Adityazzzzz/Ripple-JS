@@ -1,4 +1,4 @@
-import { CLEAN, DIRTY } from './constants.js';
+import { CLEAN, DIRTY, type NodeState } from './constants.js';
 import type { Link } from './link.js';
 import type { ReactiveNode, EffectHandle, CleanupFn } from './types.js';
 import {
@@ -6,7 +6,6 @@ import {
   startTracking,
   endTracking,
   clearDependencies,
-  queueEffect,
 } from './graph.js';
 
 /** Reference to the currently executing effect's cleanup registry */
@@ -39,7 +38,7 @@ export function onCleanup(fn: CleanupFn): void {
  * during execution and re-run when those dependencies change.
  */
 class EffectNode implements ReactiveNode {
-  _state = DIRTY; // Start dirty so initial run happens
+  _state: NodeState = DIRTY; // Start dirty so initial run happens
   _subHead: Link | null = null;
   _subTail: Link | null = null;
   _depHead: Link | null = null;

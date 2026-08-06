@@ -1,4 +1,4 @@
-import { CLEAN, DIRTY } from './constants.js';
+import { CLEAN, DIRTY, type NodeState } from './constants.js';
 import type { Link } from './link.js';
 import type { ReactiveNode, ReadonlySignal, ComputedOptions } from './types.js';
 import { ComputedBrand } from './types.js';
@@ -13,7 +13,7 @@ import { track, updateIfDirty, setActiveSubscriber, startTracking, endTracking, 
  * - Glitch-free: Uses push-pull algorithm to avoid stale reads
  */
 class ComputedNode<T> implements ReactiveNode {
-  _state = DIRTY; // Start dirty so first read triggers computation
+  _state: NodeState = DIRTY; // Start dirty so first read triggers computation
   _subHead: Link | null = null;
   _subTail: Link | null = null;
   _depHead: Link | null = null;
