@@ -56,9 +56,17 @@ export function createHistory<T>(
   const _index = signal(0);
   let _ignoreNext = false;
 
+  let _isFirst = true;
+
   // Track changes
   const stopEffect = effect(() => {
     const value = source.value;
+
+    // Skip initial effect run — initial value already in entries
+    if (_isFirst) {
+      _isFirst = false;
+      return;
+    }
 
     if (_ignoreNext) {
       _ignoreNext = false;
