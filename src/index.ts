@@ -72,6 +72,10 @@ export { throttledEffect } from './utils/throttled.js';
 export { fromPromise } from './utils/fromPromise.js';
 export type { PromiseSignal } from './utils/fromPromise.js';
 
+// Reactive collections
+export { reactiveMap, reactiveArray } from './utils/collections.js';
+export type { ReactiveMap, ReactiveArray } from './utils/collections.js';
+
 // DevTools (tree-shaken in production)
 export {
   getSubscribers,
