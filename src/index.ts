@@ -62,6 +62,16 @@ export type { History, HistoryOptions } from './utils/history.js';
 export { persistedSignal } from './utils/storage.js';
 export type { PersistedSignalOptions } from './utils/storage.js';
 
+// Error handling
+export { catchError } from './utils/catchError.js';
+
+// Throttled effect
+export { throttledEffect } from './utils/throttled.js';
+
+// Promise interop
+export { fromPromise } from './utils/fromPromise.js';
+export type { PromiseSignal } from './utils/fromPromise.js';
+
 // DevTools (tree-shaken in production)
 export {
   getSubscribers,
