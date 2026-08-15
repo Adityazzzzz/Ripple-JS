@@ -6,7 +6,7 @@
 
 *One change ripples through all dependents.*
 
-[![Bundle Size](https://img.shields.io/badge/bundle-%3C2KB-brightgreen)]()
+[![Bundle Size](https://img.shields.io/badge/bundle-3.5KB_gzip-brightgreen)]()
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-blue)]()
 [![TypeScript](https://img.shields.io/badge/TypeScript-first-3178c6)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)]()
@@ -284,7 +284,7 @@ getNodeInfo(count);     // { state, version, subscriberCount, ... }
 | Feature | Ripple.js | @preact/signals | @vue/reactivity | solid-js |
 |:---|:---:|:---:|:---:|:---:|
 | Standalone | ✅ | ✅ | ⚠️ | ❌ |
-| Bundle size | < 2KB | ~1.6KB | ~4.5KB | ~2KB |
+| Bundle size | ~3.5KB | ~1.6KB | ~4.5KB | ~2KB |
 | Zero deps | ✅ | ✅ | ✅ | ❌ |
 | Dual API (.value + tuple) | ✅ | ❌ | ❌ | ❌ |
 | Scope/ownership | ✅ | ❌ | ✅ | ✅ |
@@ -307,15 +307,52 @@ getNodeInfo(count);     // { state, version, subscriberCount, ... }
 | `untrack(fn)` | Read signals without tracking |
 | `createScope()` | Create a disposal scope |
 
+### Type Guards
+
+| Function | Description |
+|:---|:---|
+| `isSignal(value)` | Check if a value is a Signal |
+| `isComputed(value)` | Check if a value is a Computed |
+| `isReactive(value)` | Check if a value is any reactive primitive |
+
 ### Utilities
 
 | Function | Description |
 |:---|:---|
+| `readonly(signal)` | Create a read-only view of a signal |
 | `watch(source, callback, options?)` | Watch with old/new values |
 | `on(deps, callback, options?)` | Explicit dependency tracking |
 | `toJSON(value)` | Unwrap reactive values to plain data |
+| `memo(fn)` | Semantic alias for `computed()` |
+| `derive({ key: fn })` | Create multiple computed values at once |
+| `subscribe(signal, callback)` | Simple value change listener |
+| `previous(signal)` | Track the previous value of a signal |
 | `onCleanup(fn)` | Register effect cleanup |
 | `onDispose(fn)` | Register scope cleanup |
+
+### Rate Limiting
+
+| Function | Description |
+|:---|:---|
+| `debouncedEffect(fn, delay)` | Debounced side effect |
+| `debouncedSignal(value, delay)` | Signal with debounced writes |
+| `throttledEffect(fn, interval)` | Throttled side effect |
+
+### Async & Error Handling
+
+| Function | Description |
+|:---|:---|
+| `resource(source, fetcher)` | Reactive async data loading |
+| `fromPromise(promise)` | Convert a Promise to reactive signals |
+| `catchError(fn, onError)` | Error boundary for effects |
+
+### State Management
+
+| Function | Description |
+|:---|:---|
+| `createStore({ state, getters, actions })` | Zustand/Pinia-style store |
+| `createHistory(signal, options?)` | Undo/redo for any signal |
+| `persistedSignal(key, value)` | localStorage-backed signal |
 
 ### DevTools
 
