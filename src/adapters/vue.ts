@@ -63,7 +63,7 @@ import type { Signal, ReadonlySignal, EffectHandle } from '../core/types.js';
  * ```
  */
 export function toVueRef<T>(sig: Signal<T>): Ref<T> {
-  return customRef<T>((track, trigger) => {
+  return customRef<T>((track: () => void, trigger: () => void) => {
     // Watch the Ripple signal for changes and trigger Vue updates
     const dispose = effect(() => {
       sig.value; // track in Ripple
@@ -145,7 +145,7 @@ export function fromVueRef<T>(vueRef: Ref<T>): Signal<T> {
   const sig = signal<T>(vueRef.value);
 
   // Vue → Ripple sync
-  vueWatch(vueRef, (newVal) => {
+  vueWatch(vueRef, (newVal: T) => {
     sig.value = newVal;
   });
 

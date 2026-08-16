@@ -94,7 +94,7 @@ export function useSignal<T>(initialValue: T): [T, Signal<T>] {
   }
 
   const value = useSignalValue(sigRef.current);
-  return [value, sigRef.current];
+  return [value, sigRef.current] as [T, Signal<T>];
 }
 
 /**

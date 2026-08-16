@@ -11,33 +11,87 @@
       "import": "./dist/ripple.esm.js",
       "require": "./dist/ripple.cjs.js",
       "types": "./dist/types/index.d.ts"
+    },
+    "./react": {
+      "import": "./dist/adapters/react.js",
+      "types": "./dist/types/adapters/react.d.ts"
+    },
+    "./vue": {
+      "import": "./dist/adapters/vue.js",
+      "types": "./dist/types/adapters/vue.d.ts"
+    },
+    "./svelte": {
+      "import": "./dist/adapters/svelte.js",
+      "types": "./dist/types/adapters/svelte.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "bench": "tsx benchmarks/bench.ts",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist",
     "prepublishOnly": "npm run clean && npm run build"
   },
-  "keywords": ["reactive", "signals", "computed", "effects", "state-management", "reactivity", "framework-agnostic"],
+  "keywords": [
+    "reactive",
+    "signals",
+    "computed",
+    "effects",
+    "state-management",
+    "reactivity",
+    "framework-agnostic",
+    "store",
+    "undo-redo",
+    "debounce"
+  ],
   "author": "",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/Adityazzzzz/Ripple-JS"
+  },
+  "homepage": "https://github.com/Adityazzzzz/Ripple-JS#readme",
+  "bugs": {
+    "url": "https://github.com/Adityazzzzz/Ripple-JS/issues"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "svelte": ">=3.0.0",
+    "vue": ">=3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    }
   },
   "devDependencies": {
-    "typescript": "^5.5.0",
-    "rollup": "^4.18.0",
-    "@rollup/plugin-typescript": "^11.1.6",
+    "@preact/signals-core": "1.14.4",
     "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/react": "19.2.18",
+    "@vitest/coverage-v8": "2.1.9",
+    "@vue/reactivity": "3.5.41",
+    "rimraf": "^5.0.7",
+    "rollup": "^4.18.0",
     "tslib": "^2.6.3",
-    "vitest": "^2.0.0",
-    "rimraf": "^5.0.7"
+    "tsx": "4.23.12",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
   }
 }
