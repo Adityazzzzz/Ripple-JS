@@ -1,5 +1,5 @@
 {
-  "name": "ripple-js",
+  "name": "ripple-reactive",
   "version": "0.1.0",
   "description": "A standalone, framework-agnostic reactive utility library. One change ripples through all dependents.",
   "type": "module",
