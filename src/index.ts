@@ -76,6 +76,9 @@ export type { PromiseSignal } from './utils/fromPromise.js';
 export { reactiveMap, reactiveArray } from './utils/collections.js';
 export type { ReactiveMap, ReactiveArray } from './utils/collections.js';
 
+// Scope utilities
+export { effectScope } from './utils/effectScope.js';
+
 // DevTools (tree-shaken in production)
 export {
   getSubscribers,
