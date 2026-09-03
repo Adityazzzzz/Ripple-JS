@@ -1,0 +1,33 @@
+---
+title: "Architecture"
+description: "How Ripple's reactive engine works under the hood."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Ripple uses a **Push-Pull** reactive architecture, specifically designed to eliminate redundant calculations and the "glitch" problem found in naive reactive implementations.
+
+## The Push-Pull Model
+
+1. **Push Phase (Dirty Flags):** When a signal changes, it "pushes" a dirty flag down the dependency graph to its subscribers. It does *not* immediately re-run effects or computeds.
+2. **Pull Phase (Evaluation):** When an effect runs or a computed is read, it "pulls" the value. Computeds check if they are marked as dirty. If so, they evaluate.
+
+This separation ensures that we never evaluate a computed value unless it is actually needed by an effect or a direct read.
+
+## Topological Ordering
+
+To prevent glitches (seeing an inconsistent intermediate state), Ripple processes updates in topological order.
+
+Imagine `A -> B` and `A -> C`, and `B, C -> D`. 
+If `A` changes, a naive system might update `B`, then `D` (using old `C`), then update `C`, then update `D` again.
+Ripple assigns depth ranks to nodes. It ensures `B` and `C` are updated before `D`, so `D` only ever evaluates once and sees the correct state.
+
+## Link Pooling
+
+<Aside type="tip">
+**Performance Secret**
+Instead of creating new Set or Array instances to track connections between nodes, Ripple uses a doubly-linked list with pre-allocated node objects ("Link Pooling"). This drastically reduces Garbage Collection (GC) overhead during high-frequency graph updates.
+</Aside>
+
+## Why Ripple is Glitch-Free
+A glitch occurs when a computed value temporarily evaluates using a mix of old and new data. Because Ripple recursively checks dependency timestamps and updates in topological order, it mathematically guarantees that a node only evaluates when all its upstream dependencies are fully resolved.

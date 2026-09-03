@@ -1,0 +1,49 @@
+---
+title: "History (Undo/Redo)"
+description: "Add undo and redo capabilities to any signal"
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The `createHistory` feature lets you effortlessly add undo and redo functionality to a signal.
+
+## Usage
+
+```ts
+import { signal, createHistory } from 'ripple-reactive';
+
+const text = signal('');
+const history = createHistory(text);
+
+text.value = 'Hello';
+text.value = 'Hello World';
+
+console.log(text.value); // "Hello World"
+
+// Undo
+history.undo();
+console.log(text.value); // "Hello"
+
+// Redo
+history.redo();
+console.log(text.value); // "Hello World"
+```
+
+## API
+
+`createHistory` returns an object with the following properties:
+
+- `undo()`: Reverts the signal to its previous value.
+- `redo()`: Applies the next value in the history.
+- `clear()`: Clears the entire history.
+- `canUndo`: A computed signal indicating if undo is possible.
+- `canRedo`: A computed signal indicating if redo is possible.
+- `count`: A computed signal with the total number of history states.
+
+## Options
+
+You can limit the number of states kept in history to save memory:
+
+```ts
+const text = signal('');
+const history = createHistory(text, { limit: 50 });
+```

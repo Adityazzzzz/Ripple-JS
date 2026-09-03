@@ -1,0 +1,83 @@
+---
+title: "Utilities API Reference"
+description: "Reference for Ripple's utility functions."
+---
+
+## Type Guards
+
+### `isSignal`, `isComputed`, `isReactive`
+Checks if a value is a Signal, a Computed, or either.
+```ts
+import { isSignal, isComputed, isReactive } from 'ripple-reactive';
+
+isSignal(signal(0)); // true
+isComputed(computed(() => 1)); // true
+isReactive(signal(0)); // true
+```
+
+## Reactivity Utilities
+
+### `readonly`
+Wraps a signal to prevent it from being modified.
+```ts
+import { readonly } from 'ripple-reactive';
+const readOnlyCount = readonly(count);
+```
+
+### `watch`
+Observes a signal or computed, running a callback when it changes.
+```ts
+import { watch } from 'ripple-reactive';
+
+watch(count, (newVal) => {
+  console.log('Count changed', newVal);
+}, { immediate: true });
+```
+**Options:** `{ immediate?: boolean }`
+
+### `on`
+Explicit dependency tracking for effects.
+```ts
+import { on, effect } from 'ripple-reactive';
+
+effect(on([a, b], () => {
+  // Only runs when a or b changes
+  console.log(c.value); // Not tracked
+}));
+```
+
+### `toJSON`
+Unwraps a reactive value or deep reactive object to a plain JS value.
+
+### `memo`
+Alias for `computed`.
+
+### `derive`
+Creates multiple computed values from a single object definition.
+```ts
+import { derive } from 'ripple-reactive';
+
+const state = derive({
+  fullName: () => `${first.value} ${last.value}`
+});
+```
+
+### `subscribe`
+Listens to signal changes. Returns an unsubscribe function.
+```ts
+import { subscribe } from 'ripple-reactive';
+const unsub = subscribe(count, val => console.log(val));
+```
+
+### `previous`
+Creates a `ReadonlySignal` containing the previous value of another signal.
+
+### `debouncedEffect` & `debouncedSignal`
+Creates effects or signals that delay updates until a specified time has passed without changes.
+```ts
+import { debouncedSignal } from 'ripple-reactive';
+const debouncedSearch = debouncedSignal(searchQuery, 300);
+```
+
+### `throttledEffect`
+Creates an effect that runs at most once per specified interval.

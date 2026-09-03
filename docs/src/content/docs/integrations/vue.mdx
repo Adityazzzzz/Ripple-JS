@@ -1,0 +1,99 @@
+---
+title: "Vue 3 Integration"
+description: "Use Ripple in Vue 3 applications."
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Ripple integrates easily with Vue 3's composition API via `ripple-reactive/vue`.
+
+<Steps>
+1. Install:
+   ```bash
+   npm i ripple-reactive
+   ```
+2. Import the Vue utilities:
+   ```ts
+   import { toVueRef, fromVueRef, toVueComputed, useSignalEffect } from 'ripple-reactive/vue';
+   ```
+</Steps>
+
+## API Reference
+
+### `toVueRef`
+Converts a Ripple `Signal` into a Vue `Ref`. This is useful when you want to use a global Ripple signal inside a Vue template with two-way binding (`v-model`).
+
+```vue
+<script setup>
+import { signal } from 'ripple-reactive';
+import { toVueRef } from 'ripple-reactive/vue';
+
+const nameSignal = signal('Alice');
+const name = toVueRef(nameSignal);
+</script>
+
+<template>
+  <div>
+    <input v-model="name" />
+    <p>Hello, {{ name }}!</p>
+  </div>
+</template>
+```
+
+### `toVueComputed`
+Converts a Ripple `Computed` into a Vue `ComputedRef`.
+
+```vue
+<script setup>
+import { signal, computed } from 'ripple-reactive';
+import { toVueRef, toVueComputed } from 'ripple-reactive/vue';
+
+const countSignal = signal(1);
+const doubleSignal = computed(() => countSignal.value * 2);
+
+const count = toVueRef(countSignal);
+const double = toVueComputed(doubleSignal);
+</script>
+
+<template>
+  <button @click="count++">Count: {{ count }}, Double: {{ double }}</button>
+</template>
+```
+
+### `fromVueRef`
+Converts a Vue `Ref` into a Ripple `Signal`.
+
+```vue
+<script setup>
+import { ref } from 'vue';
+import { effect } from 'ripple-reactive';
+import { fromVueRef } from 'ripple-reactive/vue';
+
+const vueRef = ref(0);
+const rippleSignal = fromVueRef(vueRef);
+
+effect(() => {
+  console.log('Vue ref changed via Ripple signal:', rippleSignal.value);
+});
+</script>
+```
+
+### `useSignalEffect`
+A wrapper around Ripple's `effect` that automatically cleans up when the Vue component is unmounted.
+
+```vue
+<script setup>
+import { signal } from 'ripple-reactive';
+import { useSignalEffect } from 'ripple-reactive/vue';
+
+const counter = signal(0);
+
+useSignalEffect(() => {
+  document.title = `Count: ${counter.value}`;
+});
+</script>
+```
+
+<Aside>
+Vue already has an excellent reactivity system. You might choose Ripple in a Vue app if you have a shared core logic layer that needs to be framework-agnostic (e.g., shared between a React app and a Vue app).
+</Aside>

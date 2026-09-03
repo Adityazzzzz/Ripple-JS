@@ -1,0 +1,35 @@
+---
+title: "Derive"
+description: "Create multiple computed signals from an object of getter functions"
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The `derive` utility is a convenient way to create multiple `computed` signals at once. This is especially useful when grouping related derived state.
+
+## Usage
+
+Instead of calling `computed` multiple times, you can pass an object of getter functions to `derive`.
+
+```ts
+import { signal, derive } from 'ripple-reactive';
+
+const cart = signal([
+  { id: 1, price: 10, quantity: 2 },
+  { id: 2, price: 5, quantity: 4 }
+]);
+
+const derived = derive({
+  subtotal: () => cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0),
+  tax: () => derived.subtotal.value * 0.08,
+  total: () => derived.subtotal.value + derived.tax.value
+});
+
+console.log(derived.total.value); // 43.2
+```
+
+## When to use
+
+Use `derive` when you have multiple computed values that are conceptually grouped together, such as:
+- Shopping cart totals (subtotal, tax, total)
+- Form validation states (isValid, hasErrors, errorMessages)
+- Pagination data (currentPage, totalPages, hasNextPage)

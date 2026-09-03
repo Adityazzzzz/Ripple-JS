@@ -1,0 +1,77 @@
+---
+title: "Svelte Integration"
+description: "Use Ripple in Svelte 3/4 applications."
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+Ripple integrates seamlessly with Svelte's built-in store contract, allowing you to use the `$` prefix syntax.
+
+<Steps>
+1. Install:
+   ```bash
+   npm i ripple-reactive
+   ```
+2. Import the Svelte adapters:
+   ```ts
+   import { toStore, toReadableStore, fromStore } from 'ripple-reactive/svelte';
+   ```
+</Steps>
+
+## Svelte Store Contract
+
+Svelte automatically subscribes to any object that implements a `subscribe` method, and allows updating stores that have `set` and `update` methods. Our adapter wraps Ripple signals to match this interface perfectly.
+
+### `toStore`
+Converts a Ripple `Signal` to a Svelte `Writable`.
+
+```svelte
+<script lang="ts">
+  import { signal } from 'ripple-reactive';
+  import { toStore } from 'ripple-reactive/svelte';
+
+  const countSignal = signal(0);
+  const count = toStore(countSignal);
+</script>
+
+<button on:click={() => $count++}>
+  Count: {$count}
+</button>
+```
+
+### `toReadableStore`
+Converts a Ripple `Computed` into a Svelte `Readable`.
+
+```svelte
+<script lang="ts">
+  import { signal, computed } from 'ripple-reactive';
+  import { toStore, toReadableStore } from 'ripple-reactive/svelte';
+
+  const baseSignal = signal(10);
+  const base = toStore(baseSignal);
+
+  const doubleSignal = computed(() => baseSignal.value * 2);
+  const double = toReadableStore(doubleSignal);
+</script>
+
+<input type="number" bind:value={$base} />
+<p>Double: {$double}</p>
+```
+
+### `fromStore`
+Converts any Svelte store back into a Ripple `Signal`.
+
+```svelte
+<script lang="ts">
+  import { writable } from 'svelte/store';
+  import { effect } from 'ripple-reactive';
+  import { fromStore } from 'ripple-reactive/svelte';
+
+  const svelteStore = writable('Hello');
+  const rippleSignal = fromStore(svelteStore);
+
+  effect(() => {
+    console.log('Svelte store says:', rippleSignal.value);
+  });
+</script>
+```

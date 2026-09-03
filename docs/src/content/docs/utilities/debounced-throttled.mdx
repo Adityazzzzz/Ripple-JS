@@ -1,0 +1,66 @@
+---
+title: "Debounced & Throttled"
+description: "Control the rate at which effects run and signals update"
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Ripple provides utilities to limit how often your reactive code runs, which is crucial for performance when dealing with rapid updates like typing or scrolling.
+
+## Debounced Effect
+
+`debouncedEffect(fn, delay)` delays the execution of an effect until `delay` milliseconds have passed since the last time its dependencies changed.
+
+### Use Case: Search Autocomplete
+
+```ts
+import { signal, debouncedEffect } from 'ripple-reactive';
+
+const searchQuery = signal('');
+
+// Will only run 500ms after the user stops typing
+debouncedEffect(() => {
+  if (searchQuery.value) {
+    console.log('Fetching results for:', searchQuery.value);
+  }
+}, 500);
+```
+
+## Debounced Signal
+
+`debouncedSignal(value, delay)` creates a signal whose updates are delayed. When you update the returned signal, the internal value only updates after the delay.
+
+```ts
+import { debouncedSignal, effect } from 'ripple-reactive';
+
+const query = debouncedSignal('', 300);
+
+effect(() => {
+  console.log('Debounced query:', query.value);
+});
+
+query.value = 'a';
+query.value = 'ab';
+query.value = 'abc';
+// After 300ms, logs: Debounced query: abc
+```
+
+## Throttled Effect
+
+`throttledEffect(fn, interval)` ensures an effect runs at most once every `interval` milliseconds, no matter how often its dependencies change.
+
+### Use Case: Scroll Tracking
+
+```ts
+import { signal, throttledEffect } from 'ripple-reactive';
+
+const scrollY = signal(0);
+
+window.addEventListener('scroll', () => {
+  scrollY.value = window.scrollY;
+});
+
+// Will run at most once every 100ms during scrolling
+throttledEffect(() => {
+  console.log('Scroll position:', scrollY.value);
+}, 100);
+```

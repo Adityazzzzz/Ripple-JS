@@ -1,0 +1,139 @@
+---
+title: "Computed Values"
+description: "Derived state that updates automatically when dependencies change"
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Computed values allow you to derive new data from existing signals. They are like signals, but their value is calculated automatically by a function you provide, rather than being set manually.
+
+## Creating a Computed
+
+Use the `computed` function and pass it a function that calculates the derived value:
+
+```ts
+import { signal, computed } from 'ripple-reactive';
+
+const firstName = signal("Alice");
+const lastName = signal("Smith");
+
+const fullName = computed(() => `${firstName.value} ${lastName.value}`);
+
+console.log(fullName.value); // "Alice Smith"
+```
+
+## Lazy Evaluation & Memoization
+
+Computed values in Ripple.js are incredibly efficient. 
+
+1. **Lazy Evaluation**: The calculation function does not run immediately when you create the computed. It only runs the *first time you read it*.
+2. **Memoization**: Once calculated, the result is cached. If you read `.value` multiple times, it returns the cached result without re-running the function.
+3. **Smart Updates**: The function only re-runs if one of its dependencies (the signals it read last time) has changed.
+
+```ts
+import { signal, computed } from 'ripple-reactive';
+
+const count = signal(0);
+let runCount = 0;
+
+const double = computed(() => {
+  runCount++;
+  return count.value * 2;
+});
+
+console.log(runCount); // 0 (Lazy: hasn't run yet)
+
+console.log(double.value); // 0 (Calculation runs)
+console.log(runCount); // 1
+
+console.log(double.value); // 0 (Returns cached value)
+console.log(runCount); // 1 (Still 1!)
+
+count.value = 5; // Update dependency
+
+console.log(double.value); // 10 (Calculation re-runs)
+console.log(runCount); // 2
+```
+
+## Nested Computeds
+
+You can safely read computeds inside other computeds. Ripple automatically tracks the dependency chain.
+
+```ts
+const items = signal([1, 2, 3]);
+const totalCount = computed(() => items.value.length);
+const isEmpty = computed(() => totalCount.value === 0);
+const statusMessage = computed(() => isEmpty.value ? "Cart is empty" : `${totalCount.value} items in cart`);
+```
+
+## Glitch-Free (Diamond Dependency)
+
+Ripple.js guarantees "glitch-free" execution, solving the classic diamond dependency problem. You will never see intermediate, inconsistent states.
+
+```ts
+const name = signal("Alice");
+const upper = computed(() => name.value.toUpperCase());
+const lower = computed(() => name.value.toLowerCase());
+
+// Depends on both `upper` and `lower`, which both depend on `name`
+const combined = computed(() => `${upper.value} and ${lower.value}`);
+
+name.value = "Bob";
+// `combined` will only run ONCE with the final updated values
+// It will never run with "BOB and alice" or "ALICE and bob"
+```
+
+## Custom Equality
+
+Like signals, computeds check if their new value is equal to their old value using `Object.is()` before notifying subscribers. If a computed calculates an object or array, it might return a *new reference* even if the *data* is logically the same.
+
+You can provide a custom `equals` function to prevent unnecessary updates downstream:
+
+```ts
+import { signal, computed } from 'ripple-reactive';
+
+const users = signal([{ id: 1, name: "Alice" }, { id: 2, name: "Bob" }]);
+const search = signal("Ali");
+
+const filteredUsers = computed(
+  () => users.value.filter(u => u.name.includes(search.value)),
+  {
+    // Only notify subscribers if the array contents actually changed
+    equals: (prev, next) => {
+      if (prev.length !== next.length) return false;
+      return prev.every((user, i) => user.id === next[i].id);
+    }
+  }
+);
+```
+
+<Aside>
+`memo(fn)` is provided as an alias for `computed(fn)` if you prefer React-like terminology!
+</Aside>
+
+## Computed vs Effect
+
+When should you use `computed` vs `effect`?
+
+- Use **`computed`** when you want to **produce a new value** based on existing state. Computeds should be *pure functions* (no side effects).
+- Use **`effect`** when you want to **do something** when state changes (e.g., fetch data, update the DOM, log to console, sync to localStorage).
+
+**❌ Bad:** Using an effect to derive state
+```ts
+const first = signal("Alice");
+const last = signal("Smith");
+const full = signal("");
+
+// Don't do this!
+effect(() => {
+  full.value = `${first.value} ${last.value}`;
+});
+```
+
+**✅ Good:** Using a computed
+```ts
+const first = signal("Alice");
+const last = signal("Smith");
+
+const full = computed(() => `${first.value} ${last.value}`);
+```

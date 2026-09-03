@@ -1,0 +1,77 @@
+---
+title: "Features API Reference"
+description: "Reference for advanced Ripple features like Stores and History."
+---
+
+## `createStore`
+Creates a Zustand-style store with state, getters, and actions.
+
+```ts
+import { createStore } from 'ripple-reactive';
+
+const useAuth = createStore({
+  state: { user: null, token: '' },
+  getters: {
+    isLoggedIn: (state) => !!state.token.value
+  },
+  actions: {
+    login(state, token) {
+      state.token.value = token;
+    }
+  }
+});
+
+useAuth.login('123');
+console.log(useAuth.isLoggedIn.value);
+```
+Returns an object combining state signals, getter computeds, action methods, `$reset()`, and `$snapshot()`.
+
+## `createHistory`
+Adds undo/redo capabilities to a signal.
+
+```ts
+import { createHistory, signal } from 'ripple-reactive';
+
+const text = signal('');
+const history = createHistory(text, { limit: 50 });
+
+text.value = 'Hello';
+history.undo();
+```
+Returns: `{ undo(), redo(), clear(), canUndo, canRedo, count }`.
+
+## `persistedSignal`
+A signal that automatically synchronizes with `localStorage`.
+
+```ts
+import { persistedSignal } from 'ripple-reactive';
+
+const theme = persistedSignal('theme-pref', 'light', {
+  serialize: JSON.stringify,
+  deserialize: JSON.parse
+});
+```
+
+## `resource`
+Handles asynchronous data loading.
+
+```ts
+import { resource, signal } from 'ripple-reactive';
+
+const userId = signal(1);
+const user = resource(userId, async (id) => {
+  const res = await fetch(`/api/users/${id}`);
+  return res.json();
+});
+
+// user is an object with { data, loading, error } signals
+```
+
+## `fromPromise`
+Converts a Promise into reactive `{ data, loading, error }` signals.
+
+## `catchError`
+Wraps an effect to catch and handle synchronous exceptions gracefully.
+
+## `reactiveMap` & `reactiveArray`
+Wrappers for native Map and Array structures to make their mutations trigger reactive updates.

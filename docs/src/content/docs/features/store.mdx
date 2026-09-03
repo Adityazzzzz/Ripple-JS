@@ -1,0 +1,70 @@
+---
+title: "Store"
+description: "Zustand-style state management"
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`createStore` provides a structured way to manage complex state, inspired by Zustand and Pinia.
+
+## Usage
+
+You define a store by passing an object with `state`, `getters`, and `actions`.
+
+```ts
+import { createStore } from 'ripple-reactive';
+
+const useTodoStore = createStore({
+  state: {
+    todos: [],
+    filter: 'all'
+  },
+  getters: {
+    visibleTodos(state) {
+      if (state.filter.value === 'completed') {
+        return state.todos.value.filter(t => t.completed);
+      }
+      return state.todos.value;
+    }
+  },
+  actions: {
+    addTodo(state, text) {
+      state.todos.value = [...state.todos.value, { text, completed: false }];
+    },
+    setFilter(state, filter) {
+      state.filter.value = filter;
+    }
+  }
+});
+```
+
+## Accessing the Store
+
+The store returns an object containing your state signals, getters (as computeds), and actions.
+
+```ts
+const store = useTodoStore();
+
+// Read state
+console.log(store.filter.value);
+
+// Call actions
+store.addTodo('Learn Ripple');
+
+// Read getters
+console.log(store.visibleTodos.value);
+```
+
+## Built-in Methods
+
+### `$reset()`
+Resets all state signals back to their initial values.
+```ts
+store.$reset();
+```
+
+### `$snapshot()`
+Returns a plain, non-reactive object of the current state.
+```ts
+const rawData = store.$snapshot();
+console.log(JSON.stringify(rawData));
+```

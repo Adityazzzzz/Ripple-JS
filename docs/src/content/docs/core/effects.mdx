@@ -1,0 +1,138 @@
+---
+title: "Effects"
+description: "Run side effects automatically when signals change"
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+While signals hold state and computeds derive state, **effects** are how you actually *do things* when state changes. An effect is a function that runs immediately, tracks which reactive values it reads, and re-runs automatically whenever those values change.
+
+## Creating an Effect
+
+Use the `effect` function and pass it your side effect logic:
+
+```ts
+import { signal, effect } from 'ripple-reactive';
+
+const count = signal(0);
+
+// Runs immediately, logging: "Count is: 0"
+effect(() => {
+  console.log(`Count is: ${count.value}`);
+});
+
+// Changing the signal triggers the effect again
+count.value = 1; // Logs: "Count is: 1"
+count.value = 2; // Logs: "Count is: 2"
+```
+
+## Auto-Tracking & Dynamic Dependencies
+
+You don't need to explicitly declare dependency arrays (like in React's `useEffect`). Ripple automatically tracks whatever signals or computeds you read `.value` from while the effect is running.
+
+Crucially, tracking is **dynamic**. If an effect stops reading a signal (e.g., due to an `if` statement), it stops subscribing to it!
+
+```ts
+const name = signal("Alice");
+const showName = signal(true);
+
+effect(() => {
+  if (showName.value) {
+    console.log("Name:", name.value);
+  } else {
+    console.log("Name is hidden");
+  }
+});
+
+// Initially logs: "Name: Alice"
+// Depends on: [showName, name]
+
+name.value = "Bob";
+// Logs: "Name: Bob"
+
+showName.value = false;
+// Logs: "Name is hidden"
+// Depends on: [showName] (It did NOT read `name` this time!)
+
+name.value = "Charlie";
+// DOES NOT LOG! `name` changed, but the effect is no longer subscribed.
+```
+
+## Cleanup with `onCleanup`
+
+Often, side effects need to clean up after themselves before they re-run (or when they are destroyed). For example, clearing a timer, aborting a network request, or removing an event listener.
+
+The effect function receives an `onCleanup` callback. You can pass a function to it, which will run just *before* the effect re-runs, and when the effect is finally disposed.
+
+```ts
+import { signal, effect } from 'ripple-reactive';
+
+const id = signal(1);
+
+effect((onCleanup) => {
+  console.log(`Fetching data for user ${id.value}...`);
+  
+  const timer = setTimeout(() => {
+    console.log(`Fetched user ${id.value}`);
+  }, 1000);
+
+  // Clean up if `id` changes before the timer fires!
+  onCleanup(() => {
+    console.log(`Aborting fetch for user ${id.value}`);
+    clearTimeout(timer);
+  });
+});
+```
+
+## Disposing Effects
+
+When you create an effect, it returns a handle (a function) that you can call to permanently stop the effect and run its final cleanup.
+
+```ts
+const handle = effect(() => {
+  console.log("Running...");
+});
+
+// Stop the effect forever
+handle(); 
+```
+
+<Aside type="tip">
+When you create effects inside components using adapters like `@ripple-reactive/react` or `@ripple-reactive/vue`, you usually don't need to manually dispose of them. The adapters handle cleanup when the component unmounts. For manual management, look into [Scopes](/core/scopes).
+</Aside>
+
+## Common Patterns
+
+### DOM Updates
+```ts
+const title = signal("Hello");
+
+effect(() => {
+  document.title = title.value;
+});
+```
+
+### LocalStorage Sync
+```ts
+const theme = signal(localStorage.getItem('theme') || 'light');
+
+effect(() => {
+  localStorage.setItem('theme', theme.value);
+  document.body.className = theme.value;
+});
+```
+
+### Event Listeners
+```ts
+const windowWidth = signal(window.innerWidth);
+
+effect((onCleanup) => {
+  const handler = () => windowWidth.value = window.innerWidth;
+  
+  window.addEventListener('resize', handler);
+  
+  onCleanup(() => {
+    window.removeEventListener('resize', handler);
+  });
+});
+```

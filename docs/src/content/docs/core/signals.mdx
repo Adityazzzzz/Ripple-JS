@@ -1,0 +1,154 @@
+---
+title: "Signals"
+description: "The core reactive primitive in Ripple.js for managing state"
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+Signals are the foundation of reactivity in Ripple.js. They hold a value and automatically notify anyone who is interested when that value changes.
+
+Think of a signal as a box that holds a value. When you look inside the box (read the value), Ripple remembers that you looked. When you put something new in the box (update the value), Ripple taps you on the shoulder to let you know it changed.
+
+## Creating a Signal
+
+To create a signal, import the `signal` function and pass it an initial value:
+
+```ts
+import { signal } from 'ripple-reactive';
+
+const count = signal(0);
+const name = signal("Alice");
+const user = signal({ id: 1, role: "admin" });
+```
+
+## Reading and Writing
+
+You interact with a signal using its `.value` property.
+
+```ts
+const count = signal(0);
+
+// Read the value
+console.log(count.value); // 0
+
+// Write a new value
+count.value = 1;
+console.log(count.value); // 1
+
+// Update based on previous value
+count.value += 1;
+console.log(count.value); // 2
+```
+
+<Aside type="tip">
+When you read `.value` inside a reactive context (like an `effect` or `computed`), that context automatically subscribes to the signal.
+</Aside>
+
+## Reading Without Tracking (`.peek()`)
+
+Sometimes you want to read a signal's value without subscribing to its updates. You can use the `.peek()` method for this.
+
+```ts
+import { signal, effect } from 'ripple-reactive';
+
+const count = signal(0);
+const logCount = signal(false);
+
+effect(() => {
+  // We track `logCount`
+  if (logCount.value) {
+    // We read `count` without tracking it
+    console.log("Current count is:", count.peek());
+  }
+});
+```
+
+This is useful for logging, conditional logic, or passing values to non-reactive functions where you don't want a change in the signal to trigger a re-run.
+
+## The Getter/Setter Pattern
+
+If you prefer a React-like tuple pattern to strictly separate reading and writing, you can use `signal.tuple()`.
+
+```ts
+import { signal } from 'ripple-reactive';
+
+const [getCount, setCount] = signal.tuple(0);
+
+// Read by calling the getter function
+console.log(getCount()); // 0
+
+// Write by calling the setter function
+setCount(1);
+```
+
+This pattern is great for encapsulation. You can pass the getter to components that should only read the value, and keep the setter private.
+
+## Equality and Updates
+
+When you assign a new value to a signal, Ripple.js checks if the value actually changed using `Object.is()`. If the new value is the same as the old value, subscribers will **not** be notified.
+
+```ts
+const name = signal("Alice");
+
+// This triggers subscribers
+name.value = "Bob"; 
+
+// This does NOT trigger subscribers, because it's the exact same string
+name.value = "Bob"; 
+```
+
+<Aside type="caution">
+Because Ripple uses `Object.is()`, mutating an object or array in place won't trigger updates! You must provide a *new* object or array reference.
+
+```ts
+const user = signal({ name: "Alice" });
+
+// ❌ BAD: Mutating doesn't trigger updates!
+user.value.name = "Bob"; 
+
+// ✅ GOOD: Reassign with a new object
+user.value = { ...user.value, name: "Bob" };
+```
+</Aside>
+
+## TypeScript
+
+Signals are fully typed. TypeScript will infer the type from the initial value, but you can also provide a generic type explicitly:
+
+```ts
+import { signal, type Signal } from 'ripple-reactive';
+
+// Inferred as Signal<number>
+const count = signal(0);
+
+// Explicitly typed (useful for unions or when initial value is null)
+const user = signal<{ id: number; name: string } | null>(null);
+```
+
+## Common Patterns
+
+### Counters
+
+```ts
+const count = signal(0);
+const increment = () => count.value++;
+const decrement = () => count.value--;
+```
+
+### Form Inputs
+
+```ts
+const username = signal("");
+const isValid = computed(() => username.value.length >= 3);
+
+function handleInput(event: Event) {
+  username.value = (event.target as HTMLInputElement).value;
+}
+```
+
+### Toggles
+
+```ts
+const isModalOpen = signal(false);
+const toggleModal = () => isModalOpen.value = !isModalOpen.value;
+```

@@ -1,0 +1,105 @@
+---
+title: "Scopes"
+description: "Manage memory and lifecycle of reactive primitives"
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+When you create effects or computeds, they allocate memory and set up subscriptions. In long-running applications (like SPAs), you need a way to clean them up when they are no longer needed (e.g., when a user navigates away from a page).
+
+**Scopes** provide a way to group reactive primitives together so they can all be disposed of at once.
+
+## `createScope()`
+
+Use `createScope()` to instantiate a new scope. It returns an object with a `.run(fn)` method and a `.dispose()` method.
+
+Any effects or computeds created *inside* the `.run()` callback are automatically attached to that scope.
+
+```ts
+import { signal, effect, createScope } from 'ripple-reactive';
+
+const count = signal(0);
+const scope = createScope();
+
+scope.run(() => {
+  // This effect belongs to `scope`
+  effect(() => {
+    console.log(count.value);
+  });
+  
+  // You can set up event listeners here, etc.
+});
+
+count.value = 1; // Effect logs: 1
+
+// Later, when the component/page unmounts:
+scope.dispose();
+
+count.value = 2; // Effect does NOT run. It was disposed!
+```
+
+## `onDispose`
+
+Just as effects have `onCleanup`, scopes have `onDispose`. You can register callbacks that will run when the scope itself is disposed.
+
+```ts
+import { createScope, onDispose } from 'ripple-reactive';
+
+const scope = createScope();
+
+scope.run(() => {
+  const ws = new WebSocket('ws://localhost:8080');
+  
+  onDispose(() => {
+    console.log("Closing websocket...");
+    ws.close();
+  });
+});
+
+// Later...
+scope.dispose(); // Websocket is closed
+```
+
+## `effectScope()` Convenience Wrapper
+
+If you want to create a scope, run a function immediately inside it, and just get back the disposal function, you can use the `effectScope` shorthand:
+
+```ts
+import { effectScope, effect } from 'ripple-reactive';
+
+const dispose = effectScope(() => {
+  effect(() => { /* ... */ });
+  effect(() => { /* ... */ });
+});
+
+// Later...
+dispose();
+```
+
+## Nested Scopes
+
+Scopes can be nested. If a scope is created inside another scope's `.run()` method, it becomes a child scope. When the parent scope is disposed, all child scopes are automatically disposed as well.
+
+```ts
+const parent = createScope();
+
+parent.run(() => {
+  const child = createScope();
+  
+  child.run(() => {
+    effect(() => console.log("Child effect"));
+  });
+});
+
+// Disposing the parent also disposes the child and its effects!
+parent.dispose(); 
+```
+
+## Best Practices
+
+<Aside type="tip">
+**Use Scopes for Framework Integrations!**
+If you are using Ripple.js inside vanilla JS or building a custom UI framework, scopes are essential for preventing memory leaks. Tie a `createScope()` to the mounting of a component, and call `.dispose()` when the component unmounts.
+</Aside>
+
+If you are using the provided framework adapters (`@ripple-reactive/react`, etc.), the adapter handles component-level scopes for you under the hood! You generally only need manual scopes when building vanilla JS logic outside of components.

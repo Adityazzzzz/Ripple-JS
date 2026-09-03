@@ -1,0 +1,44 @@
+---
+title: "Collections"
+description: "Reactive Maps and Arrays"
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+While you can store arrays and objects in a standard `signal`, mutating them (like `arr.push(1)`) won't trigger updates unless you reassign the signal entirely. Reactive Collections provide fine-grained reactivity for data structures.
+
+## `reactiveArray()`
+
+A wrapper around a standard JavaScript Array that intercepts mutations and triggers updates automatically.
+
+```ts
+import { reactiveArray, effect } from 'ripple-reactive';
+
+const list = reactiveArray([1, 2, 3]);
+
+effect(() => {
+  console.log('List length:', list.length);
+});
+
+// Triggers the effect!
+list.push(4); 
+```
+
+### When to use
+Use `reactiveArray` when you frequently mutate the array (push, pop, splice) and want components/effects to react immediately without doing `list.value = [...list.value]`.
+
+## `reactiveMap()`
+
+A reactive version of the native `Map` object.
+
+```ts
+import { reactiveMap, effect } from 'ripple-reactive';
+
+const userCache = reactiveMap();
+
+effect(() => {
+  console.log('Has Bob?', userCache.has('bob'));
+});
+
+// Triggers the effect
+userCache.set('bob', { age: 30 });
+```

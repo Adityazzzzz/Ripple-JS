@@ -1,0 +1,67 @@
+---
+title: Ripple.js
+description: A standalone, framework-agnostic reactive utility library. One change ripples through all dependents.
+template: splash
+hero:
+  tagline: Reactivity shouldn't require a framework. Signals, computed values, and effects — plug them into anything.
+  image:
+    file: ../../assets/logo-dark.svg
+  actions:
+    - text: Get Started
+      link: /getting-started/introduction/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/Adityazzzzz/Ripple-JS
+      icon: external
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+## Why Ripple.js?
+
+Most reactivity systems are **locked inside UI frameworks**. Ripple.js gives you the same power — signals, computed values, and effects — as **standalone utilities** you can use anywhere.
+
+<CardGrid stagger>
+  <Card title="Zero Dependencies" icon="puzzle">
+    No framework required. Works in Node.js, browsers, web workers, Deno — anywhere JavaScript runs.
+  </Card>
+  <Card title="~3.5KB Gzipped" icon="rocket">
+    The entire core library in a single tiny bundle. Every utility tree-shakes independently.
+  </Card>
+  <Card title="TypeScript First" icon="seti:typescript">
+    Built in TypeScript with full type inference. Every function is generically typed.
+  </Card>
+  <Card title="Framework Adapters" icon="laptop">
+    First-class adapters for React, Vue 3, and Svelte. Drop Ripple.js into your existing project.
+  </Card>
+  <Card title="Batteries Included" icon="setting">
+    Store management, undo/redo, localStorage persistence, async resources, reactive collections — all built in.
+  </Card>
+  <Card title="Glitch-Free" icon="approve-check">
+    Push-pull reactive graph ensures consistent state. No stale reads, no diamond dependency bugs.
+  </Card>
+</CardGrid>
+
+## Quick Example
+
+```ts
+import { signal, computed, effect } from 'ripple-reactive';
+
+const count = signal(0);
+const doubled = computed(() => count.value * 2);
+
+effect(() => {
+  console.log(`Count: ${count.value}, Doubled: ${doubled.value}`);
+});
+// Output: "Count: 0, Doubled: 0"
+
+count.value = 5;
+// Output: "Count: 5, Doubled: 10"
+```
+
+## Install
+
+```bash
+npm install ripple-reactive
+```

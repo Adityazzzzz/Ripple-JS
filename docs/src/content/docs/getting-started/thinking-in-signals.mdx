@@ -1,0 +1,100 @@
+---
+title: "Thinking in Signals"
+description: "Learn the mental model for reactive programming with signals."
+---
+import { Aside } from '@astrojs/starlight/components';
+
+If you are coming from traditional procedural programming or older UI frameworks, understanding signals requires a slight shift in how you think about state. 
+
+## The Ripple Metaphor
+
+Imagine throwing a stone into a still pond. 
+1. The stone hits the water (this is your **Signal** updating).
+2. Ripples expand outward immediately (these are your **Computed** derivations updating).
+3. The ripples reach the shore and move the sand (these are your **Effects** pushing updates to the UI or console).
+
+In Ripple.js, **you don't write code that tells the shore to move**. You just throw the stone, and the system guarantees the ripples will reach the shore automatically.
+
+## The Triad of Reactivity
+
+Ripple.js operates on three core primitives:
+
+1. **Signals (State)**: The "atoms" of state. They store values and broadcast changes.
+2. **Computed (Derived State)**: They take signals and transform them. They cache their results and only recalculate when their underlying signals change.
+3. **Effects (Side Effects)**: The endpoints of your reactive graph. They execute code (like writing to the DOM, or making a network request) whenever the signals they rely on change.
+
+## Imperative vs. Reactive
+
+Let's compare standard JavaScript (imperative) with Ripple.js (reactive).
+
+### Imperative (Pull)
+
+In standard JS, variables are static points in time.
+```javascript
+let a = 1;
+let b = 2;
+let sum = a + b;
+
+console.log(sum); // 3
+
+a = 10;
+console.log(sum); // Still 3! We have to manually recalculate 'sum = a + b'
+```
+You have to *pull* the new state manually and manage the dependencies yourself.
+
+### Reactive (Push-Pull)
+
+With signals, variables act like cells in a spreadsheet.
+```ts
+import { signal, computed, effect } from 'ripple-reactive';
+
+const a = signal(1);
+const b = signal(2);
+const sum = computed(() => a.value + b.value);
+
+effect(() => console.log(sum.value)); // Logs: 3
+
+a.value = 10; // Automatically logs: 12!
+```
+Ripple.js uses a **push-pull** model:
+- Changing a signal *pushes* an invalidation notice down the graph.
+- When an effect runs, it *pulls* the latest computed values, causing them to recalculate only when necessary.
+
+## Common Mistakes
+
+<Aside type="caution" title="Destructuring Reactivity">
+  A common mistake is reading a signal's value outside of an effect or computed block, and expecting reactivity to work.
+
+  ```ts
+  const count = signal(0);
+  
+  // ❌ BAD: We read `.value` exactly once when this line runs.
+  const isEven = count.value % 2 === 0; 
+  
+  // ✅ GOOD: Wrap it in a computed to make it reactive.
+  const isEvenReactive = computed(() => count.value % 2 === 0);
+  ```
+</Aside>
+
+<Aside type="caution" title="Mutating Objects directly">
+  Ripple.js signals track reassignment. If you mutate an array or object without reassigning it, the signal won't know it changed.
+
+  ```ts
+  const user = signal({ name: 'Alice' });
+
+  // ❌ BAD: Mutating an internal property doesn't trigger updates
+  user.value.name = 'Bob';
+
+  // ✅ GOOD: Reassign the entire object
+  user.value = { ...user.value, name: 'Bob' };
+  ```
+  *(Note: For deep reactivity, consider using `createStore`, `reactiveMap`, or `reactiveArray`)*
+</Aside>
+
+## When NOT to use Signals
+
+Signals are incredibly fast, but they have a small overhead (managing subscriptions and dependency graphs).
+You do **not** need signals for:
+- Static data that never changes during the lifecycle of your app.
+- Local variables inside a function that don't need to trigger side-effects elsewhere.
+- High-frequency game loops (like 60fps canvas rendering) where allocating dependency arrays could cause garbage collection pauses. In those cases, pure imperative variables are faster.

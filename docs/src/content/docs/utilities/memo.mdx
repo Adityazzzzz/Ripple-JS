@@ -1,0 +1,26 @@
+---
+title: "Memo"
+description: "An alias for computed"
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`memo` is simply an alias for `computed`. It behaves exactly the same way.
+
+## Usage
+
+```ts
+import { signal, memo } from 'ripple-reactive';
+
+const count = signal(2);
+const double = memo(() => count.value * 2);
+
+console.log(double.value); // 4
+```
+
+## Why two names?
+
+Different UI frameworks use different terminology for derived state:
+- Vue, MobX, and Ember use `computed`.
+- React and SolidJS use `memo` or `useMemo`.
+
+Ripple provides both `computed` and `memo` so you can use whichever term feels most natural to you and your team.

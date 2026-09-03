@@ -1,0 +1,30 @@
+/* Ripple.js Documentation Custom Styles */
+
+:root {
+  --sl-color-accent-low: #0c4a6e;
+  --sl-color-accent: #0ea5e9;
+  --sl-color-accent-high: #bae6fd;
+  --sl-font: 'Inter', system-ui, sans-serif;
+  --sl-font-system-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #e0f2fe;
+  --sl-color-accent: #0284c7;
+  --sl-color-accent-high: #0c4a6e;
+}
+
+/* Hero section polish */
+.hero {
+  text-align: center;
+}
+
+/* Code block improvements */
+.expressive-code pre {
+  border-radius: 0.5rem;
+}
+
+/* Sidebar accent */
+nav[aria-label="Main"] a[aria-current="page"] {
+  font-weight: 600;
+}

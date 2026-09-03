@@ -1,0 +1,94 @@
+---
+title: "Batching"
+description: "Optimize performance by grouping multiple signal updates"
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+By default, every time you update a signal's value, Ripple immediately notifies subscribers and runs any associated effects. Usually, this is fast enough. However, if you are updating multiple signals sequentially, you might trigger the same effect multiple times unnecessarily.
+
+**Batching** allows you to group multiple state updates together, ensuring that effects only run *once* after all the updates are complete.
+
+## Why Batch?
+
+Consider this unbatched code:
+
+```ts
+import { signal, effect } from 'ripple-reactive';
+
+const firstName = signal("John");
+const lastName = signal("Doe");
+
+effect(() => {
+  console.log(`User: ${firstName.value} ${lastName.value}`);
+});
+// Initial run: Logs "User: John Doe"
+
+// Updating sequentially:
+firstName.value = "Alice"; 
+// 🔴 Effect runs immediately: Logs "User: Alice Doe" (Intermediate/Invalid state!)
+
+lastName.value = "Smith";  
+// 🔴 Effect runs again: Logs "User: Alice Smith"
+```
+
+## How `batch` Works
+
+Import the `batch` function and wrap your updates in a callback.
+
+```ts
+import { signal, effect, batch } from 'ripple-reactive';
+
+const firstName = signal("John");
+const lastName = signal("Doe");
+
+effect(() => {
+  console.log(`User: ${firstName.value} ${lastName.value}`);
+});
+
+batch(() => {
+  firstName.value = "Alice";
+  lastName.value = "Smith";
+});
+// 🟢 Effect runs ONLY ONCE at the end of the batch!
+// Logs: "User: Alice Smith"
+```
+
+## Real-world Example: Form Submission
+
+Batching is incredibly useful when applying bulk updates, like form submissions or receiving a payload from a WebSocket.
+
+```ts
+function applyUserData(userData) {
+  batch(() => {
+    user.value = userData.id;
+    email.value = userData.email;
+    role.value = userData.role;
+    lastLogin.value = userData.lastLogin;
+    preferences.value = userData.preferences;
+  });
+}
+```
+Without `batch()`, any effect observing these signals would run 5 separate times. With `batch()`, it runs exactly once.
+
+## Nested Batches
+
+You can safely nest `batch` calls. Ripple keeps track of the depth and only flushes updates when the outermost batch completes.
+
+```ts
+batch(() => {
+  count.value++;
+  
+  batch(() => {
+    name.value = "Nested";
+  });
+  
+  // Updates are still pending here
+});
+// Effects run here, after the outermost batch finishes
+```
+
+<Aside>
+**When you DON'T need batch:** 
+You only need to use `batch` for sequential updates you trigger manually. If multiple signals change as a result of a single event loop tick, you might still want batching to prevent synchronous layout thrashing. However, Ripple's internal computations (like nested `computed` values) are already glitch-free and don't require manual batching to resolve dependencies correctly.
+</Aside>

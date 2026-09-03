@@ -1,0 +1,91 @@
+---
+title: "Introduction"
+description: "What is Ripple.js, why it exists, and who it's for."
+---
+import { Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Welcome to Ripple.js! Ripple.js is a standalone, lightweight, and incredibly fast reactive JavaScript library based on **signals**. 
+
+## What is Ripple.js?
+
+Ripple.js provides a simple yet powerful way to manage state and reactivity in your JavaScript applications. It uses the push-pull execution model to ensure that your UI only updates when it absolutely needs to, and that derived states are computed only when accessed. 
+
+It is designed to be **framework-agnostic**. You can use it in Vanilla JS, or plug it seamlessly into React, Vue, or Svelte using our official adapters. 
+
+## Why Ripple.js?
+
+State management in modern web apps can be notoriously complex. You often have to choose between massive overarching state stores (like Redux) or highly framework-specific hooks (like React's `useState`).
+
+Ripple.js exists to give you the best of both worlds:
+- The fine-grained reactivity of Solid.js.
+- The simplicity and portability of Vanilla JS.
+- The developer ergonomics of Vue's Composition API.
+
+## Features at a Glance
+
+<CardGrid stagger>
+  <Card title="Zero Dependencies" icon="rocket">
+    Ripple.js core has zero external dependencies, making it incredibly lightweight (< 4KB gzipped) and secure.
+  </Card>
+  <Card title="Framework Agnostic" icon="puzzle">
+    Use it anywhere. Official adapters are provided for React, Vue, and Svelte.
+  </Card>
+  <Card title="Fine-Grained Reactivity" icon="magnifier">
+    Signals, computed values, and effects ensure only what changes gets updated.
+  </Card>
+  <Card title="TypeScript Ready" icon="document">
+    Written in TypeScript. Exceptional type inference out of the box.
+  </Card>
+</CardGrid>
+
+## How it compares
+
+Here is a quick look at how creating a reactive counter looks in Ripple.js compared to popular frameworks:
+
+<Tabs>
+  <TabItem label="Ripple.js">
+    ```ts
+    import { signal, effect } from 'ripple-reactive';
+
+    const count = signal(0);
+    effect(() => console.log(`Count is: ${count.value}`));
+
+    count.value++;
+    ```
+  </TabItem>
+  <TabItem label="React">
+    ```tsx
+    import { useState, useEffect } from 'react';
+
+    function Counter() {
+      const [count, setCount] = useState(0);
+      
+      useEffect(() => {
+        console.log(`Count is: ${count}`);
+      }, [count]);
+
+      return <button onClick={() => setCount(c => c + 1)}>Increment</button>;
+    }
+    ```
+  </TabItem>
+  <TabItem label="Vue">
+    ```ts
+    import { ref, watchEffect } from 'vue';
+
+    const count = ref(0);
+    watchEffect(() => console.log(`Count is: ${count.value}`));
+
+    count.value++;
+    ```
+  </TabItem>
+  <TabItem label="Solid">
+    ```ts
+    import { createSignal, createEffect } from 'solid-js';
+
+    const [count, setCount] = createSignal(0);
+    createEffect(() => console.log(`Count is: ${count()}`));
+
+    setCount(count() + 1);
+    ```
+  </TabItem>
+</Tabs>

@@ -1,0 +1,84 @@
+---
+title: "Vanilla JS Integration"
+description: "Use Ripple in plain JavaScript without any build tools."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Ripple is designed to work beautifully without any UI framework. You can use it directly in the browser to power interactive UIs.
+
+## CDN Usage
+
+You can drop Ripple into an HTML file using esm.sh or unpkg:
+
+```html
+<!DOCTYPE html>
+<html>
+<body>
+  <div id="app">
+    <button id="btn">Click me</button>
+    <p id="output"></p>
+  </div>
+
+  <script type="module">
+    import { signal, effect } from 'https://esm.sh/ripple-reactive';
+
+    const count = signal(0);
+
+    const btn = document.getElementById('btn');
+    const output = document.getElementById('output');
+
+    // Update DOM automatically when count changes
+    effect(() => {
+      output.textContent = `Count is ${count.value}`;
+    });
+
+    // Handle events
+    btn.addEventListener('click', () => {
+      count.value++;
+    });
+  </script>
+</body>
+</html>
+```
+
+## Building a Mini-Component System
+
+You can use Ripple to build your own lightweight component architecture.
+
+```ts
+import { signal, computed, effect } from 'ripple-reactive';
+
+function createCounter(element: HTMLElement) {
+  const count = signal(0);
+  const isEven = computed(() => count.value % 2 === 0);
+
+  element.innerHTML = `
+    <button class="inc">+1</button>
+    <span class="value"></span>
+    <span class="status"></span>
+  `;
+
+  const incBtn = element.querySelector('.inc')!;
+  const valueEl = element.querySelector('.value')!;
+  const statusEl = element.querySelector('.status')!;
+
+  incBtn.addEventListener('click', () => count.value++);
+
+  // DOM Updates
+  effect(() => {
+    valueEl.textContent = String(count.value);
+  });
+
+  effect(() => {
+    statusEl.textContent = isEven.value ? 'Even' : 'Odd';
+    statusEl.style.color = isEven.value ? 'green' : 'red';
+  });
+}
+
+createCounter(document.getElementById('counter-app')!);
+```
+
+<Aside>
+Since Vanilla JS doesn't have an automatic component unmount lifecycle, remember that long-living effects on elements that get removed from the DOM could cause memory leaks. You can use the returned `dispose` function from `effect()` to clean them up, or use `createScope()` to manage groups of effects.
+</Aside>

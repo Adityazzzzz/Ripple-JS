@@ -1,0 +1,32 @@
+---
+title: "Performance"
+description: "Understanding and optimizing Ripple's performance."
+---
+
+Ripple is built for maximum speed and minimal memory allocation. In internal micro-benchmarks, it routinely matches or exceeds the performance of Vue Reactivity and Preact Signals.
+
+## Benchmark Highlights
+
+- **Signal Creation:** Extremely fast due to minimal object shapes.
+- **Read/Write:** Property access is highly optimized for V8 hidden classes.
+- **Diamond Dependencies:** Efficiently handles complex graphs without redundant evaluations due to depth-based topological sorting.
+- **Effect Fan-out:** Broadcasting updates to thousands of effects operates in linear time with minimal GC pressure thanks to Link Pooling.
+
+## Optimization Tips
+
+1. **Use `batch` for multiple updates:**
+   If you are updating several signals at once, wrap them in `batch(() => { ... })`. This pauses effect execution until all mutations are complete.
+
+2. **Use `untrack` or `.peek()` for non-reactive reads:**
+   If you need to read a signal inside an effect without tracking it, use `untrack(() => signal.value)` or simply `signal.peek()`. This saves memory and prevents unwanted re-runs.
+
+3. **Provide `equals` to `computed`:**
+   By default, `computed` uses strict equality (`===`). If your computed returns an array or object, it will trigger downstream updates every time it evaluates. Provide a custom equals function:
+   ```ts
+   computed(() => [a.value, b.value], { 
+     equals: (prev, next) => prev[0] === next[0] && prev[1] === next[1] 
+   })
+   ```
+
+4. **Keep Computeds Pure:**
+   Never mutate signals inside a `computed`. It breaks the graph assumptions and can lead to infinite loops.

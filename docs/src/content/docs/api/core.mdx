@@ -1,0 +1,107 @@
+---
+title: "Core API Reference"
+description: "Reference for Ripple's core reactive primitives."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## `signal`
+Creates a reactive state variable.
+
+```ts
+import { signal } from 'ripple-reactive';
+
+const count = signal(0);
+count.value = 1; // triggers updates
+console.log(count.peek()); // reads without tracking
+```
+
+**Signature:** `signal<T>(value: T): Signal<T>`
+- **`value`**: Initial value
+- **Returns**: `Signal<T>` with `.value` getter/setter and `.peek()` method.
+
+## `signal.tuple`
+Creates a signal but returns it as a tuple similar to React's `useState` or Solid's `createSignal`.
+
+```ts
+const [getCount, setCount] = signal.tuple(0);
+setCount(getCount() + 1);
+```
+**Signature:** `signal.tuple<T>(value: T): [SignalGetter<T>, SignalSetter<T>]`
+
+## `computed`
+Creates a derived reactive value that updates only when its dependencies change.
+
+```ts
+import { signal, computed } from 'ripple-reactive';
+
+const name = signal('John');
+const greeting = computed(() => `Hello ${name.value}`);
+```
+
+**Signature:** `computed<T>(fn: () => T, options?: { equals?: (prev, next) => boolean }): ReadonlySignal<T>`
+- **`fn`**: The derivation function.
+- **`options.equals`**: Custom equality function to prevent unnecessary updates.
+- **Returns**: `ReadonlySignal<T>`
+
+## `effect`
+Creates a reactive side-effect that re-runs whenever its dependencies change.
+
+```ts
+import { signal, effect } from 'ripple-reactive';
+
+const count = signal(0);
+const dispose = effect((onCleanup) => {
+  console.log('Count is', count.value);
+  
+  onCleanup(() => console.log('Cleaning up!'));
+});
+
+// Later:
+dispose();
+```
+
+**Signature:** `effect(fn: (onCleanup: (fn: () => void) => void) => void): EffectHandle`
+
+## `batch`
+Groups multiple signal updates together, causing effects to run only once after the batch completes.
+
+```ts
+import { batch } from 'ripple-reactive';
+
+batch(() => {
+  firstName.value = 'Jane';
+  lastName.value = 'Doe';
+}); // Effects run once here
+```
+
+## `untrack`
+Executes a function without tracking any reactive dependencies.
+
+```ts
+import { untrack } from 'ripple-reactive';
+
+effect(() => {
+  // Only runs when `a` changes, `b` is ignored
+  console.log(a.value + untrack(() => b.value));
+});
+```
+
+## `createScope` / `effectScope`
+Creates a scope to collect and dispose multiple effects together. `effectScope` is an alias for `createScope`.
+
+```ts
+import { createScope, effect } from 'ripple-reactive';
+
+const scope = createScope();
+
+scope.run(() => {
+  effect(() => { /* ... */ });
+  effect(() => { /* ... */ });
+});
+
+scope.dispose(); // Cleans up all effects inside
+```
+
+## `onCleanup` & `onDispose`
+`onCleanup` registers a cleanup function inside an `effect`. `onDispose` registers a cleanup function inside a `Scope`.

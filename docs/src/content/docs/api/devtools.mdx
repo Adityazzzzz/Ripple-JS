@@ -1,0 +1,61 @@
+---
+title: "DevTools API Reference"
+description: "Reference for Ripple DevTools inspection functions."
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Ripple exposes debugging utilities to help inspect the reactive graph at runtime.
+
+<Aside type="caution">
+These functions are intended for debugging and development tools. Relying on them for application logic is an anti-pattern.
+</Aside>
+
+## `getSubscribers`
+Returns a list of all reactive nodes (computeds or effects) that currently depend on the given signal or computed.
+
+```ts
+import { getSubscribers, signal, effect } from 'ripple-reactive';
+
+const count = signal(0);
+effect(() => console.log(count.value));
+
+const subs = getSubscribers(count);
+console.log(subs); // Array containing the effect node
+```
+
+## `getDependencies`
+Returns a list of all signals or computeds that the given computed or effect currently depends on.
+
+```ts
+import { getDependencies, computed, signal } from 'ripple-reactive';
+
+const a = signal(1);
+const b = signal(2);
+const c = computed(() => a.value + b.value);
+
+// Force evaluation
+c.value;
+
+const deps = getDependencies(c);
+console.log(deps); // [a, b]
+```
+
+## `getNodeInfo`
+Returns detailed metadata about a reactive node.
+
+```ts
+import { getNodeInfo } from 'ripple-reactive';
+
+const info = getNodeInfo(mySignal);
+// { type: 'signal', value: current_value, id: unique_id, ... }
+```
+
+## `getGraphSnapshot`
+Takes an array of root nodes and traverses the dependency graph to return a complete snapshot of all connected nodes and their relationships. Useful for building visualizers.
+
+```ts
+import { getGraphSnapshot } from 'ripple-reactive';
+
+const snapshot = getGraphSnapshot([rootSignal]);
+```

@@ -1,0 +1,92 @@
+---
+title: "Untrack"
+description: "Read reactive values without subscribing to updates"
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+By default, any signal read inside an `effect` or `computed` becomes a dependency. Whenever that signal changes, the effect/computed re-runs. 
+
+Sometimes, you need to read a signal's current value *without* creating a dependency. You can do this using `.peek()` (on the signal itself) or the `untrack()` function.
+
+## What `untrack` Does
+
+`untrack(fn)` runs the provided function and returns its result, but tells Ripple's tracking system to ignore any signal reads that happen inside it.
+
+```ts
+import { signal, effect, untrack } from 'ripple-reactive';
+
+const count = signal(0);
+const name = signal("Alice");
+
+effect(() => {
+  // `count` is a dependency. This effect runs when `count` changes.
+  console.log(`Count is ${count.value}`);
+  
+  // We read `name`, but we DON'T track it!
+  const currentName = untrack(() => name.value);
+  console.log(`Associated with: ${currentName}`);
+});
+```
+
+In the example above, changing `count.value` triggers the effect. Changing `name.value` does **not**.
+
+## `untrack()` vs `.peek()`
+
+`untrack()` and `.peek()` achieve the same goal. 
+- Use `.peek()` when you just need to read a single signal.
+- Use `untrack()` when you have a block of logic, or are calling a helper function that might read multiple signals, and you want to ignore all of them.
+
+```ts
+// Using peek (cleaner for single signals)
+const val = mySignal.peek();
+
+// Using untrack
+const result = untrack(() => {
+  return signalA.value + signalB.value;
+});
+```
+
+## Common Patterns
+
+### Logging State
+
+When logging state changes inside an effect, you might want to log a secondary value without triggering the log when that secondary value changes.
+
+```ts
+const data = signal(null);
+const isDebugMode = signal(false);
+
+effect(() => {
+  // We only want this effect to run when `data` changes.
+  const payload = data.value;
+  
+  // We check debug mode, but don't want toggling debug mode to trigger the log!
+  if (untrack(() => isDebugMode.value)) {
+    console.log("Data updated:", payload);
+  }
+});
+```
+
+### Conditional Reads
+
+While Ripple's auto-tracking is dynamic (it drops dependencies if an `if` branch isn't taken), `untrack` is useful when you *always* evaluate a condition but don't want to track the signals involved in the evaluation itself.
+
+### Writing to Signals based on other Signals
+
+If you are updating a signal based on another signal inside an effect, you often want to untrack the target signal to prevent infinite loops or unwanted re-runs.
+
+```ts
+const source = signal(1);
+const target = signal(0);
+
+effect(() => {
+  const currentSource = source.value; // Tracked
+  
+  // We want to update target, but we might need to read its current value first.
+  // We MUST untrack reading `target`, otherwise the write will trigger this effect again!
+  const currentTarget = target.peek(); 
+  
+  target.value = currentTarget + currentSource;
+});
+```

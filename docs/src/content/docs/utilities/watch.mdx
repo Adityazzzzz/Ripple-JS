@@ -1,0 +1,54 @@
+---
+title: "Watch"
+description: "Watch a signal and run a callback when it changes"
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The `watch` utility allows you to observe a specific reactive value and run a callback whenever it changes. Unlike `effect`, which automatically tracks all dependencies, `watch` explicitly watches a single source.
+
+## Usage
+
+```ts
+import { signal, watch } from 'ripple-reactive';
+
+const count = signal(0);
+
+// Runs only when `count` changes
+const unwatch = watch(count, (newValue, oldValue) => {
+  console.log(`Count changed from ${oldValue} to ${newValue}`);
+});
+
+count.value = 1; // Logs: Count changed from 0 to 1
+```
+
+## Options
+
+### `immediate`
+
+By default, `watch` only runs when the watched value changes. If you want the callback to run immediately upon creation, pass `{ immediate: true }`.
+
+```ts
+import { signal, watch } from 'ripple-reactive';
+
+const count = signal(0);
+
+watch(count, (newValue) => {
+  console.log('Current count:', newValue);
+}, { immediate: true });
+// Logs immediately with current value
+```
+
+## Disposal
+
+`watch` returns an unsubscribe function. Call it to stop watching.
+
+```ts
+const unwatch = watch(count, () => { /* ... */ });
+
+// Stop watching
+unwatch();
+```
+
+## Comparison with Vue `watch`
+
+If you are coming from Vue, `watch` in Ripple behaves very similarly to Vue's `watch`, providing both the new and old values and accepting an `immediate` option. However, it's designed to work standalone or with any framework adapter.

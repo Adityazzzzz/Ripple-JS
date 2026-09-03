@@ -1,0 +1,42 @@
+---
+title: "Readonly"
+description: "Create a read-only view of a signal"
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The `readonly` utility wraps a signal and returns a `ReadonlySignal`. This prevents the value from being modified directly through the wrapper.
+
+## Usage
+
+```ts
+import { signal, readonly } from 'ripple-reactive';
+
+const count = signal(0);
+const readOnlyCount = readonly(count);
+
+console.log(readOnlyCount.value); // 0
+
+// TypeScript will complain, and at runtime this won't update the original signal
+// readOnlyCount.value = 1; 
+```
+
+## Exposing State Safely
+
+`readonly` is perfect for encapsulating state inside a module, class, or custom hook. You can keep the writable signal private and only expose the readonly version.
+
+```ts
+import { signal, readonly } from 'ripple-reactive';
+
+function createCounter() {
+  const internalCount = signal(0);
+  
+  return {
+    count: readonly(internalCount),
+    increment: () => { internalCount.value++ }
+  };
+}
+
+const counter = createCounter();
+counter.increment();
+console.log(counter.count.value); // 1
+```

@@ -1,0 +1,25 @@
+---
+title: "Promise Interop"
+description: "Convert a Promise into reactive signals"
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Sometimes you have a one-shot `Promise` (like an initialization task) and you want to bind its state to your UI. `fromPromise` does exactly that.
+
+## Usage
+
+```ts
+import { fromPromise, effect } from 'ripple-reactive';
+
+const myPromise = fetch('https://api.example.com/config').then(res => res.json());
+
+const { data, loading, error } = fromPromise(myPromise);
+
+effect(() => {
+  if (loading.value) console.log('Loading...');
+  if (error.value) console.error('Failed!', error.value);
+  if (data.value) console.log('Config loaded:', data.value);
+});
+```
+
+Unlike `resource`, `fromPromise` does not refetch. It simply wraps a single, existing Promise in reactive state.

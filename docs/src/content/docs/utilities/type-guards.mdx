@@ -1,0 +1,58 @@
+---
+title: "Type Guards"
+description: "Check if a value is a signal or computed"
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Ripple provides type guards to help you identify reactive objects at runtime.
+
+## `isSignal`
+
+Checks if a value is a standard (writable) `Signal`.
+
+```ts
+import { signal, isSignal } from 'ripple-reactive';
+
+const count = signal(0);
+console.log(isSignal(count)); // true
+console.log(isSignal(0)); // false
+```
+
+## `isComputed`
+
+Checks if a value is a readonly `Computed` signal.
+
+```ts
+import { signal, computed, isComputed } from 'ripple-reactive';
+
+const count = signal(0);
+const double = computed(() => count.value * 2);
+
+console.log(isComputed(double)); // true
+```
+
+## `isReactive`
+
+Checks if a value is *any* reactive node (either a Signal or a Computed).
+
+```ts
+import { signal, computed, isReactive } from 'ripple-reactive';
+
+const count = signal(0);
+const double = computed(() => count.value * 2);
+
+console.log(isReactive(count)); // true
+console.log(isReactive(double)); // true
+```
+
+## Use Cases
+
+Type guards are especially useful when writing generic utilities or framework bindings that might receive either plain values or signals:
+
+```ts
+import { isReactive } from 'ripple-reactive';
+
+function unwrap(value) {
+  return isReactive(value) ? value.value : value;
+}
+```

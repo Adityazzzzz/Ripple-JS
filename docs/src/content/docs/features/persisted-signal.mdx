@@ -1,0 +1,34 @@
+---
+title: "Persisted Signal"
+description: "Sync signals with localStorage"
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`persistedSignal` creates a signal that automatically synchronizes its value with `localStorage` (or `sessionStorage`), persisting state across page reloads and even across different tabs.
+
+## Usage
+
+Provide a storage key and a default value.
+
+```ts
+import { persistedSignal } from 'ripple-reactive';
+
+// Initializes from localStorage if 'app-theme' exists, otherwise uses 'light'
+const theme = persistedSignal('app-theme', 'light');
+
+// Updates both the signal and localStorage
+theme.value = 'dark'; 
+```
+
+## Options
+
+You can provide custom serialization and deserialization functions. This is useful for complex objects like Dates or Maps.
+
+```ts
+import { persistedSignal } from 'ripple-reactive';
+
+const userSetting = persistedSignal('settings', { theme: 'dark', retries: 3 }, {
+  serialize: (val) => JSON.stringify(val),
+  deserialize: (str) => JSON.parse(str)
+});
+```

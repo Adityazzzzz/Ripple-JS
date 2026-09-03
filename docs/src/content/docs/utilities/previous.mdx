@@ -1,0 +1,40 @@
+---
+title: "Previous"
+description: "Track the previous value of a signal"
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+The `previous` utility creates a readonly signal that always holds the *previous* value of another signal.
+
+## Usage
+
+```ts
+import { signal, previous, effect } from 'ripple-reactive';
+
+const page = signal(1);
+const prevPage = previous(page);
+
+effect(() => {
+  console.log(`Navigated from ${prevPage.value} to ${page.value}`);
+});
+
+page.value = 2; // Logs: Navigated from 1 to 2
+```
+
+## Common Patterns
+
+### Animation Direction
+
+You can use `previous` to determine which way an animation should slide based on whether a value increased or decreased.
+
+```ts
+import { signal, computed, previous } from 'ripple-reactive';
+
+const currentStep = signal(2);
+const prevStep = previous(currentStep);
+
+const slideDirection = computed(() => {
+  if (prevStep.value === undefined) return 'none';
+  return currentStep.value > prevStep.value ? 'slide-left' : 'slide-right';
+});
+```

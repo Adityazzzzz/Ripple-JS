@@ -1,0 +1,93 @@
+---
+title: "Installation"
+description: "How to install Ripple.js in your project."
+---
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Ripple.js is distributed via npm. It requires **Node.js 18+** and **TypeScript 5+** (if you are using TypeScript).
+
+## Installing the Core Package
+
+To use Ripple.js in Vanilla JS or a generic TypeScript project, install the core `ripple-reactive` package.
+
+<Tabs>
+  <TabItem label="npm">
+    ```bash
+    npm install ripple-reactive
+    ```
+  </TabItem>
+  <TabItem label="yarn">
+    ```bash
+    yarn add ripple-reactive
+    ```
+  </TabItem>
+  <TabItem label="pnpm">
+    ```bash
+    pnpm add ripple-reactive
+    ```
+  </TabItem>
+  <TabItem label="bun">
+    ```bash
+    bun add ripple-reactive
+    ```
+  </TabItem>
+</Tabs>
+
+### Package Size
+Ripple.js is highly optimized. The core reactivity engine is **< 4KB minified and gzipped**. 
+
+## CDN Usage
+
+You can also drop Ripple.js directly into an HTML file using a CDN like unpkg or esm.sh:
+
+```html
+<script type="module">
+  import { signal, effect } from 'https://esm.sh/ripple-reactive';
+
+  const count = signal(0);
+  // ...
+</script>
+```
+
+## Framework Adapters
+
+If you are using a UI framework, you'll want to use the corresponding adapter to seamlessly bridge Ripple.js state with your framework's rendering lifecycle.
+
+### React
+
+```bash
+npm install ripple-reactive
+```
+Import React-specific hooks from the subpath:
+```ts
+import { useSignal, useComputed } from 'ripple-reactive/react';
+```
+
+### Vue
+
+```bash
+npm install ripple-reactive
+```
+Import Vue-specific utilities from the subpath:
+```ts
+import { toVueRef, fromVueRef } from 'ripple-reactive/vue';
+```
+
+### Svelte
+
+```bash
+npm install ripple-reactive
+```
+Import Svelte-specific utilities from the subpath:
+```ts
+import { toStore, fromStore } from 'ripple-reactive/svelte';
+```
+
+## Package Exports Map
+
+Ripple.js exposes the following entry points in its `package.json`:
+
+- `ripple-reactive` — The core reactive primitives (`signal`, `computed`, `effect`, etc.)
+- `ripple-reactive/react` — React hooks integration
+- `ripple-reactive/vue` — Vue Composition API integration
+- `ripple-reactive/svelte` — Svelte Stores integration

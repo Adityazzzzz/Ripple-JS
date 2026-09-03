@@ -1,0 +1,94 @@
+---
+title: "React Integration"
+description: "Use Ripple in React applications with the official bindings."
+---
+
+import { Tabs, TabItem, Steps, Aside } from '@astrojs/starlight/components';
+
+Ripple provides seamless integration with React through `ripple-reactive/react`.
+
+<Steps>
+1. Install the core library and React adapter:
+   ```bash
+   npm i ripple-reactive
+   ```
+2. Import the hooks:
+   ```ts
+   import { useSignal, useComputed, useSignalValue, useSignalEffect } from 'ripple-reactive/react';
+   ```
+</Steps>
+
+## Hooks
+
+### `useSignalValue`
+Subscribes to an existing signal and triggers a re-render when it changes.
+
+```tsx
+import { signal } from 'ripple-reactive';
+import { useSignalValue } from 'ripple-reactive/react';
+
+const count = signal(0); // Global signal
+
+function Counter() {
+  const value = useSignalValue(count);
+  return <button onClick={() => count.value++}>Count: {value}</button>;
+}
+```
+
+### `useSignal`
+Creates a local signal tied to the component's lifecycle.
+
+```tsx
+import { useSignal } from 'ripple-reactive/react';
+
+function LocalCounter() {
+  const [value, countSignal] = useSignal(0);
+  return <button onClick={() => countSignal.value++}>Count: {value}</button>;
+}
+```
+
+### `useComputed`
+Creates a derived value that caches its result and only re-evaluates when dependencies change.
+
+```tsx
+import { signal } from 'ripple-reactive';
+import { useComputed, useSignalValue } from 'ripple-reactive/react';
+
+const todos = signal([{ text: 'Learn Ripple', done: false }]);
+
+function TodoStats() {
+  const completedCount = useComputed(() => 
+    todos.value.filter(t => t.done).length
+  );
+  
+  return <div>Completed: {completedCount}</div>;
+}
+```
+
+### `useSignalEffect`
+Runs a side effect that automatically tracks its dependencies.
+
+```tsx
+import { useSignalEffect, useSignal } from 'ripple-reactive/react';
+
+function Logger() {
+  const [value, count] = useSignal(0);
+
+  useSignalEffect(() => {
+    console.log('Count changed to:', count.value);
+  });
+
+  return <button onClick={() => count.value++}>Increment</button>;
+}
+```
+
+## Global vs Local Signals
+
+<Aside type="tip">
+**When to use which?**
+- Use **Global signals** (`signal` outside components + `useSignalValue`) for application state that multiple components need to access or modify.
+- Use **Local signals** (`useSignal` inside components) for temporary UI state like form inputs or toggles.
+</Aside>
+
+## How it Works
+The React adapter uses React's `useSyncExternalStore` under the hood to ensure tear-free rendering and compatibility with Concurrent React features.

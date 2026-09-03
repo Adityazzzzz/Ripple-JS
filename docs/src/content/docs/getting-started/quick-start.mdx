@@ -1,0 +1,98 @@
+---
+title: "Quick Start"
+description: "Build a reactive counter step by step using Ripple.js."
+---
+import { Steps } from '@astrojs/starlight/components';
+
+Let's dive right in and build a reactive counter using Vanilla JS and Ripple.js. We'll learn how to create state, derive new state from it, and run side effects.
+
+<Steps>
+
+1.  **Create a Signal**
+
+    A `signal` is the core building block of Ripple.js. It holds a value and alerts the system whenever that value changes.
+
+    ```ts
+    import { signal } from 'ripple-reactive';
+
+    const count = signal(0);
+    
+    // Read the value
+    console.log(count.value); // 0
+    ```
+
+2.  **Add a Computed Value**
+
+    A `computed` value derives its state from one or more signals. It updates automatically when its dependencies change, but it is lazy—it only runs when accessed.
+
+    ```ts
+    import { signal, computed } from 'ripple-reactive';
+
+    const count = signal(0);
+    const doubled = computed(() => count.value * 2);
+    
+    console.log(doubled.value); // 0
+    ```
+
+3.  **Run an Effect**
+
+    An `effect` runs a function immediately, tracks any signals you read inside it, and re-runs the function automatically whenever those signals change.
+
+    ```ts
+    import { signal, computed, effect } from 'ripple-reactive';
+
+    const count = signal(0);
+    const doubled = computed(() => count.value * 2);
+
+    effect(() => {
+      console.log(`Count: ${count.value}, Doubled: ${doubled.value}`);
+    });
+    // Logs: "Count: 0, Doubled: 0"
+    ```
+
+4.  **Update the State**
+
+    To change a signal, just reassign its `.value` property. Ripple.js will take care of updating the `computed` values and re-running the `effect`s.
+
+    ```ts
+    count.value = 1; 
+    // Logs: "Count: 1, Doubled: 2"
+    ```
+
+5.  **Batch Updates**
+
+    If you change multiple signals at once, you might not want your effects to run multiple times. Wrap your updates in a `batch` to ensure effects only run once at the end.
+
+    ```ts
+    import { signal, computed, effect, batch } from 'ripple-reactive';
+
+    const first = signal('John');
+    const last = signal('Doe');
+
+    effect(() => {
+      console.log(`Name changed to: ${first.value} ${last.value}`);
+    });
+
+    batch(() => {
+      first.value = 'Jane';
+      last.value = 'Smith';
+    });
+    // Effect only runs ONCE here, logging: "Name changed to: Jane Smith"
+    ```
+
+</Steps>
+
+## What just happened?
+
+1. You imported primitives (`signal`, `computed`, `effect`, `batch`) from `ripple-reactive`.
+2. You wrapped raw values in a **Signal** to make them observable.
+3. You created a **Computed** signal that caches and derives values based on other signals.
+4. You set up an **Effect** that subscribes to both the `count` and `doubled` signals by simply reading their `.value` property.
+5. When you updated `count.value`, Ripple.js automatically knew to invalidate `doubled` and re-run your `effect`.
+
+## Next Steps
+
+Now that you've got the basics down, you might want to:
+- Learn more about [Thinking in Signals](/getting-started/thinking-in-signals).
+- Check out the [Core API Reference](/api/core).
+- See how to use Ripple.js in [React](/adapters/react), [Vue](/adapters/vue), or [Svelte](/adapters/svelte).
