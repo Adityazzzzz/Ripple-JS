@@ -1,30 +1,340 @@
-/* Ripple.js Documentation Custom Styles */
+/* ============================================
+   Ripple.js Docs — Documentify-Style Theme
+   ============================================ */
 
+/* ---- Orange accent color palette ---- */
 :root {
-  --sl-color-accent-low: #0c4a6e;
-  --sl-color-accent: #0ea5e9;
-  --sl-color-accent-high: #bae6fd;
-  --sl-font: 'Inter', system-ui, sans-serif;
-  --sl-font-system-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --sl-color-accent-low: #fff7ed;
+  --sl-color-accent: #ea580c;
+  --sl-color-accent-high: #9a3412;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #f8fafc;
+  --sl-color-gray-2: #e2e8f0;
+  --sl-color-gray-3: #94a3b8;
+  --sl-color-gray-4: #475569;
+  --sl-color-gray-5: #1e293b;
+  --sl-color-gray-6: #0f172a;
+  --sl-color-black: #020617;
+  --sl-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --sl-font-system-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', monospace;
+  --sl-text-h1: 2rem;
+  --sl-text-h2: 1.5rem;
+  --sl-text-h3: 1.2rem;
 }
 
-:root[data-theme='light'] {
-  --sl-color-accent-low: #e0f2fe;
-  --sl-color-accent: #0284c7;
-  --sl-color-accent-high: #0c4a6e;
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #431407;
+  --sl-color-accent: #f97316;
+  --sl-color-accent-high: #fed7aa;
+  --sl-color-white: #0f172a;
+  --sl-color-gray-1: #1e293b;
+  --sl-color-gray-2: #334155;
+  --sl-color-gray-3: #64748b;
+  --sl-color-gray-4: #94a3b8;
+  --sl-color-gray-5: #e2e8f0;
+  --sl-color-gray-6: #f8fafc;
+  --sl-color-black: #f8fafc;
 }
 
-/* Hero section polish */
+/* ---- Top header bar — clean, white with orange accent ---- */
+header.header {
+  background: var(--sl-color-white) !important;
+  border-bottom: 1px solid var(--sl-color-gray-2) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* ---- Site title styling ---- */
+.site-title {
+  font-weight: 700 !important;
+  color: var(--sl-color-gray-6) !important;
+}
+
+/* ---- Left sidebar — clean with orange active indicator ---- */
+nav[aria-label="Main"] a {
+  color: var(--sl-color-gray-4) !important;
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem !important;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+}
+
+nav[aria-label="Main"] a:hover {
+  color: var(--sl-color-accent) !important;
+  background: var(--sl-color-accent-low) !important;
+}
+
+nav[aria-label="Main"] a[aria-current="page"] {
+  color: var(--sl-color-accent) !important;
+  font-weight: 600 !important;
+  background: var(--sl-color-accent-low) !important;
+  border-left: 3px solid var(--sl-color-accent) !important;
+}
+
+/* Sidebar group labels */
+.sidebar-content summary,
+nav[aria-label="Main"] .group-label span,
+.top-level > details > summary {
+  font-weight: 700 !important;
+  font-size: 0.8rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--sl-color-gray-5) !important;
+}
+
+/* ---- Right sidebar TOC — orange active state ---- */
+starlight-toc a {
+  color: var(--sl-color-gray-4) !important;
+  font-size: 0.85rem;
+  border-left: 2px solid transparent;
+  padding-left: 0.75rem;
+}
+
+starlight-toc a[aria-current="true"] {
+  color: var(--sl-color-accent) !important;
+  border-left-color: var(--sl-color-accent) !important;
+  font-weight: 600;
+}
+
+/* ---- Breadcrumbs styling ---- */
+.breadcrumbs a {
+  color: var(--sl-color-accent) !important;
+}
+
+/* ---- Main content area ---- */
+.main-pane {
+  background: var(--sl-color-white);
+}
+
+/* Page title */
+.content-panel h1 {
+  font-weight: 800 !important;
+  color: var(--sl-color-gray-6) !important;
+  margin-bottom: 0.25rem !important;
+}
+
+/* Description text under title */
+.content-panel h1 + p {
+  color: var(--sl-color-gray-3) !important;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+/* ---- Code blocks — card style with rounded corners ---- */
+.expressive-code {
+  margin: 1.5rem 0 !important;
+}
+
+.expressive-code .frame {
+  border-radius: 12px !important;
+  border: 1px solid var(--sl-color-gray-2) !important;
+  overflow: hidden !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Code block header/title bar */
+.expressive-code .frame .header {
+  background: var(--sl-color-accent) !important;
+  color: white !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.expressive-code .frame .header .title {
+  color: white !important;
+}
+
+/* Code content */
+.expressive-code pre {
+  border-radius: 0 0 12px 12px !important;
+  padding: 1.25rem !important;
+  font-size: 0.9rem !important;
+  line-height: 1.7 !important;
+}
+
+/* Copy button */
+.expressive-code .copy button {
+  border-radius: 6px !important;
+}
+
+/* ---- Aside/callout boxes ---- */
+.starlight-aside {
+  border-radius: 10px !important;
+  border-left: 4px solid !important;
+  padding: 1rem 1.25rem !important;
+  margin: 1.5rem 0 !important;
+}
+
+.starlight-aside--tip {
+  background: #f0fdf4 !important;
+  border-left-color: #22c55e !important;
+}
+
+.starlight-aside--note {
+  background: #eff6ff !important;
+  border-left-color: #3b82f6 !important;
+}
+
+.starlight-aside--caution {
+  background: #fff7ed !important;
+  border-left-color: #f97316 !important;
+}
+
+.starlight-aside--danger {
+  background: #fef2f2 !important;
+  border-left-color: #ef4444 !important;
+}
+
+:root[data-theme='dark'] .starlight-aside--tip { background: #052e16 !important; }
+:root[data-theme='dark'] .starlight-aside--note { background: #172554 !important; }
+:root[data-theme='dark'] .starlight-aside--caution { background: #431407 !important; }
+:root[data-theme='dark'] .starlight-aside--danger { background: #450a0a !important; }
+
+/* ---- Card grid — styled like Documentify example cards ---- */
+.card {
+  border: 1px solid var(--sl-color-gray-2) !important;
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+  transition: all 0.2s ease !important;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+  border-color: var(--sl-color-accent) !important;
+}
+
+.card .card-title {
+  font-weight: 700 !important;
+  color: var(--sl-color-gray-6) !important;
+}
+
+/* ---- Inline code styling ---- */
+:not(pre) > code {
+  background: var(--sl-color-accent-low) !important;
+  color: var(--sl-color-accent-high) !important;
+  padding: 0.15rem 0.4rem !important;
+  border-radius: 4px !important;
+  font-size: 0.875em !important;
+  font-weight: 500 !important;
+}
+
+/* ---- Links ---- */
+.sl-markdown-content a:not(.card a) {
+  color: var(--sl-color-accent) !important;
+  text-decoration: none !important;
+  font-weight: 500;
+}
+
+.sl-markdown-content a:hover {
+  text-decoration: underline !important;
+}
+
+/* ---- Tables — clean bordered style ---- */
+.sl-markdown-content table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+  margin: 1.5rem 0 !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+}
+
+.sl-markdown-content th {
+  background: var(--sl-color-gray-1) !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  padding: 0.75rem 1rem !important;
+  border-bottom: 2px solid var(--sl-color-gray-2) !important;
+}
+
+.sl-markdown-content td {
+  padding: 0.6rem 1rem !important;
+  border-bottom: 1px solid var(--sl-color-gray-2) !important;
+}
+
+/* ---- Tabs — orange active tab ---- */
+starlight-tabs [role="tab"] {
+  color: var(--sl-color-gray-4) !important;
+  border-bottom: 2px solid transparent !important;
+  font-weight: 500;
+}
+
+starlight-tabs [role="tab"][aria-selected="true"] {
+  color: var(--sl-color-accent) !important;
+  border-bottom-color: var(--sl-color-accent) !important;
+  font-weight: 600;
+}
+
+/* ---- Hero section (landing page) ---- */
 .hero {
   text-align: center;
+  padding: 4rem 0 !important;
 }
 
-/* Code block improvements */
-.expressive-code pre {
-  border-radius: 0.5rem;
+.hero .tagline {
+  font-size: 1.25rem !important;
+  color: var(--sl-color-gray-4) !important;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-/* Sidebar accent */
-nav[aria-label="Main"] a[aria-current="page"] {
-  font-weight: 600;
+/* Hero action buttons */
+.hero .action.primary {
+  background: var(--sl-color-accent) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  padding: 0.7rem 1.5rem !important;
+  transition: background 0.15s ease;
+}
+
+.hero .action.primary:hover {
+  background: #c2410c !important;
+}
+
+.hero .action:not(.primary) {
+  border: 1px solid var(--sl-color-gray-2) !important;
+  border-radius: 8px !important;
+  color: var(--sl-color-gray-5) !important;
+}
+
+/* ---- Search ---- */
+site-search button {
+  border-radius: 8px !important;
+  border: 1px solid var(--sl-color-gray-2) !important;
+}
+
+/* ---- Pagination (prev/next) ---- */
+.pagination-links a {
+  border: 1px solid var(--sl-color-gray-2) !important;
+  border-radius: 10px !important;
+  padding: 1rem 1.25rem !important;
+  transition: all 0.15s ease;
+}
+
+.pagination-links a:hover {
+  border-color: var(--sl-color-accent) !important;
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.1) !important;
+}
+
+/* ---- Smooth scrolling ---- */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ---- Better spacing for content ---- */
+.sl-markdown-content h2 {
+  margin-top: 2.5rem !important;
+  padding-bottom: 0.5rem !important;
+  border-bottom: 1px solid var(--sl-color-gray-2) !important;
+}
+
+.sl-markdown-content h3 {
+  margin-top: 1.75rem !important;
+}
+
+/* ---- Content max-width for readability ---- */
+.sl-markdown-content {
+  line-height: 1.8 !important;
 }
