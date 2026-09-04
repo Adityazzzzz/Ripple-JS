@@ -1,0 +1,22 @@
+---
+// CodeCard.astro — Documentify-style code preview card with gradient header
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description } = Astro.props;
+---
+
+<div class="rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow my-6">
+  <div class="bg-gradient-to-r from-orange-500 via-orange-400 to-amber-400 px-5 py-3">
+    <span class="text-white font-semibold text-sm">{title}</span>
+  </div>
+  <div class="bg-gray-950 p-5">
+    <slot />
+  </div>
+  {description && (
+    <div class="bg-white px-5 py-4 border-t border-gray-100">
+      <p class="text-sm text-gray-500 leading-relaxed">{description}</p>
+    </div>
+  )}
+</div>
