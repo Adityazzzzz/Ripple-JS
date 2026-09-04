@@ -1,0 +1,86 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import CodeCard from '../../components/CodeCard.astro';
+---
+
+<DocsLayout 
+  title="Signals" 
+  description="Reactive values that automatically track dependencies and notify subscribers when they change."
+  breadcrumbs={[
+    { label: 'Core Concepts', href: '/core/signals' },
+    { label: 'Signals', href: '/core/signals' },
+  ]}
+>
+
+<h2 id="what-is-a-signal">What is a Signal?</h2>
+
+<p>A <strong>signal</strong> is the most basic reactive primitive in Ripple.js. It holds a value that can be read and written. When you read a signal inside an effect or computed, a dependency is automatically tracked. When the signal's value changes, all dependents are notified.</p>
+
+<CodeCard title="creating-signals" description="Use signal() to create a new reactive value. Access it via .value — reads are tracked, writes propagate.">
+  <pre class="text-sm leading-relaxed"><code class="text-gray-300"><span class="text-purple-400">import</span> {'{'} <span class="text-orange-300">signal</span> {'}'} <span class="text-purple-400">from</span> <span class="text-green-400">'ripple-reactive'</span>;
+
+<span class="text-purple-400">const</span> <span class="text-blue-300">count</span> = <span class="text-orange-300">signal</span>(<span class="text-amber-300">0</span>);
+
+<span class="text-gray-500">// Read (tracked inside effects/computed)</span>
+console.<span class="text-cyan-300">log</span>(<span class="text-blue-300">count</span>.<span class="text-cyan-300">value</span>);  <span class="text-gray-500">// → 0</span>
+
+<span class="text-gray-500">// Write (notifies all subscribers)</span>
+<span class="text-blue-300">count</span>.<span class="text-cyan-300">value</span> = <span class="text-amber-300">5</span>;</code></pre>
+</CodeCard>
+
+<h2 id="reading-and-writing">Reading and Writing</h2>
+
+<p>Every signal has a <code>.value</code> property. Reading <code>.value</code> inside a tracked context (like <code>effect</code> or <code>computed</code>) automatically registers a dependency. Writing to <code>.value</code> triggers all subscribers to re-run.</p>
+
+<div class="grid md:grid-cols-2 gap-4 my-6">
+  <CodeCard title="read-example" description="Reading .value is tracked automatically inside effects.">
+    <pre class="text-sm leading-relaxed"><code class="text-gray-300"><span class="text-purple-400">const</span> <span class="text-blue-300">name</span> = <span class="text-orange-300">signal</span>(<span class="text-green-400">'Alice'</span>);
+
+<span class="text-orange-300">effect</span>(() => {'{'}
+  <span class="text-gray-500">// This re-runs when name changes</span>
+  console.<span class="text-cyan-300">log</span>(<span class="text-blue-300">name</span>.<span class="text-cyan-300">value</span>);
+{'}'});</code></pre>
+  </CodeCard>
+  <CodeCard title="write-example" description="Writing .value propagates changes to all subscribers.">
+    <pre class="text-sm leading-relaxed"><code class="text-gray-300"><span class="text-blue-300">name</span>.<span class="text-cyan-300">value</span> = <span class="text-green-400">'Bob'</span>;
+<span class="text-gray-500">// → effect re-runs, logs "Bob"</span>
+
+<span class="text-blue-300">name</span>.<span class="text-cyan-300">value</span> = <span class="text-green-400">'Charlie'</span>;
+<span class="text-gray-500">// → effect re-runs, logs "Charlie"</span></code></pre>
+  </CodeCard>
+</div>
+
+<h2 id="peek">Untracked Reads with .peek()</h2>
+
+<p>Sometimes you want to read a signal's value <strong>without</strong> subscribing to it. Use <code>.peek()</code> — it returns the current value without registering a dependency.</p>
+
+<CodeCard title="peek-usage" description="Use .peek() when you need the value but don't want to re-run when it changes.">
+  <pre class="text-sm leading-relaxed"><code class="text-gray-300"><span class="text-orange-300">effect</span>(() => {'{'}
+  <span class="text-gray-500">// This effect tracks 'a' but NOT 'b'</span>
+  console.<span class="text-cyan-300">log</span>(<span class="text-blue-300">a</span>.<span class="text-cyan-300">value</span>, <span class="text-blue-300">b</span>.<span class="text-cyan-300">peek</span>());
+{'}'});</code></pre>
+</CodeCard>
+
+<h2 id="tuple-pattern">Tuple Pattern</h2>
+
+<p>If you prefer the SolidJS-style <code>[getter, setter]</code> pattern, use <code>signal.tuple()</code>:</p>
+
+<CodeCard title="signal-tuple" description="signal.tuple() returns a getter function and setter function — familiar if you've used SolidJS or React useState.">
+  <pre class="text-sm leading-relaxed"><code class="text-gray-300"><span class="text-purple-400">const</span> [<span class="text-blue-300">count</span>, <span class="text-blue-300">setCount</span>] = <span class="text-orange-300">signal</span>.<span class="text-cyan-300">tuple</span>(<span class="text-amber-300">0</span>);
+
+<span class="text-blue-300">count</span>();        <span class="text-gray-500">// → 0 (read)</span>
+<span class="text-blue-300">setCount</span>(<span class="text-amber-300">5</span>);    <span class="text-gray-500">// → set to 5</span>
+<span class="text-blue-300">setCount</span>(<span class="text-blue-300">n</span> => <span class="text-blue-300">n</span> + <span class="text-amber-300">1</span>); <span class="text-gray-500">// → set to 6 (updater)</span></code></pre>
+</CodeCard>
+
+<h2 id="typescript">TypeScript</h2>
+
+<p>Signals are fully generic. TypeScript infers the type from the initial value, or you can be explicit:</p>
+
+<CodeCard title="typescript-signals">
+  <pre class="text-sm leading-relaxed"><code class="text-gray-300"><span class="text-purple-400">const</span> <span class="text-blue-300">count</span> = <span class="text-orange-300">signal</span>(<span class="text-amber-300">0</span>);         <span class="text-gray-500">// Signal&lt;number&gt;</span>
+<span class="text-purple-400">const</span> <span class="text-blue-300">name</span> = <span class="text-orange-300">signal</span>(<span class="text-green-400">'hello'</span>);   <span class="text-gray-500">// Signal&lt;string&gt;</span>
+<span class="text-purple-400">const</span> <span class="text-blue-300">user</span> = <span class="text-orange-300">signal</span>&lt;<span class="text-cyan-300">User</span> | <span class="text-cyan-300">null</span>&gt;(<span class="text-cyan-300">null</span>); <span class="text-gray-500">// explicit</span></code></pre>
+</CodeCard>
+
+</DocsLayout>
