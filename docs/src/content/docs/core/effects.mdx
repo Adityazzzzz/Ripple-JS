@@ -3,8 +3,6 @@ title: "Effects"
 description: "Run side effects automatically when signals change"
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 While signals hold state and computeds derive state, **effects** are how you actually *do things* when state changes. An effect is a function that runs immediately, tracks which reactive values it reads, and re-runs automatically whenever those values change.
 
 ## Creating an Effect
@@ -97,9 +95,9 @@ const handle = effect(() => {
 handle(); 
 ```
 
-<Aside type="tip">
+> **tip**: 
 When you create effects inside components using adapters like `@ripple-reactive/react` or `@ripple-reactive/vue`, you usually don't need to manually dispose of them. The adapters handle cleanup when the component unmounts. For manual management, look into [Scopes](/core/scopes).
-</Aside>
+
 
 ## Common Patterns
 
@@ -136,3 +134,4 @@ effect((onCleanup) => {
   });
 });
 ```
+

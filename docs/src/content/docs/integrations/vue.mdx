@@ -3,11 +3,9 @@ title: "Vue 3 Integration"
 description: "Use Ripple in Vue 3 applications."
 ---
 
-import { Steps, Aside } from '@astrojs/starlight/components';
-
 Ripple integrates easily with Vue 3's composition API via `ripple-reactive/vue`.
 
-<Steps>
+
 1. Install:
    ```bash
    npm i ripple-reactive
@@ -16,7 +14,7 @@ Ripple integrates easily with Vue 3's composition API via `ripple-reactive/vue`.
    ```ts
    import { toVueRef, fromVueRef, toVueComputed, useSignalEffect } from 'ripple-reactive/vue';
    ```
-</Steps>
+
 
 ## API Reference
 
@@ -94,6 +92,7 @@ useSignalEffect(() => {
 </script>
 ```
 
-<Aside>
+> 
 Vue already has an excellent reactivity system. You might choose Ripple in a Vue app if you have a shared core logic layer that needs to be framework-agnostic (e.g., shared between a React app and a Vue app).
-</Aside>
+
+

@@ -2,8 +2,6 @@
 title: "Thinking in Signals"
 description: "Learn the mental model for reactive programming with signals."
 ---
-import { Aside } from '@astrojs/starlight/components';
-
 If you are coming from traditional procedural programming or older UI frameworks, understanding signals requires a slight shift in how you think about state. 
 
 ## The Ripple Metaphor
@@ -62,7 +60,7 @@ Ripple.js uses a **push-pull** model:
 
 ## Common Mistakes
 
-<Aside type="caution" title="Destructuring Reactivity">
+> **caution**: 
   A common mistake is reading a signal's value outside of an effect or computed block, and expecting reactivity to work.
 
   ```ts
@@ -74,9 +72,9 @@ Ripple.js uses a **push-pull** model:
   // ✅ GOOD: Wrap it in a computed to make it reactive.
   const isEvenReactive = computed(() => count.value % 2 === 0);
   ```
-</Aside>
 
-<Aside type="caution" title="Mutating Objects directly">
+
+> **caution**: 
   Ripple.js signals track reassignment. If you mutate an array or object without reassigning it, the signal won't know it changed.
 
   ```ts
@@ -89,7 +87,7 @@ Ripple.js uses a **push-pull** model:
   user.value = { ...user.value, name: 'Bob' };
   ```
   *(Note: For deep reactivity, consider using `createStore`, `reactiveMap`, or `reactiveArray`)*
-</Aside>
+
 
 ## When NOT to use Signals
 
@@ -98,3 +96,4 @@ You do **not** need signals for:
 - Static data that never changes during the lifecycle of your app.
 - Local variables inside a function that don't need to trigger side-effects elsewhere.
 - High-frequency game loops (like 60fps canvas rendering) where allocating dependency arrays could cause garbage collection pauses. In those cases, pure imperative variables are faster.
+

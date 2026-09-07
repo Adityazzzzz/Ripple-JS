@@ -3,8 +3,6 @@ title: "Bundle Size"
 description: "Keeping your application fast and lean."
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 Ripple is designed to be exceptionally lightweight. 
 
 ## Core Size
@@ -18,7 +16,7 @@ Ripple is distributed as ECMAScript Modules (ESM). This means your bundler (Vite
 
 If you only use `signal` and `effect`, your final bundle size contribution from Ripple will be significantly less than 3.5KB.
 
-<Aside type="tip">
+> **tip**: 
 To maximize tree-shaking, always import exactly what you need from the core package:
 ```ts
 // ✅ Good
@@ -27,7 +25,7 @@ import { signal, computed } from 'ripple-reactive';
 // ❌ Avoid if possible (though modern bundlers handle it)
 import * as rx from 'ripple-reactive';
 ```
-</Aside>
+
 
 ## Checking your Bundle Size
 If you are using Vite, you can use `rollup-plugin-visualizer` to see exactly how much space Ripple takes up in your final build:
@@ -44,3 +42,4 @@ export default {
   plugins: [visualizer()],
 };
 ```
+

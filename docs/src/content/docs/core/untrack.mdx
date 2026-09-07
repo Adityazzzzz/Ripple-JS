@@ -3,8 +3,6 @@ title: "Untrack"
 description: "Read reactive values without subscribing to updates"
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 By default, any signal read inside an `effect` or `computed` becomes a dependency. Whenever that signal changes, the effect/computed re-runs. 
 
 Sometimes, you need to read a signal's current value *without* creating a dependency. You can do this using `.peek()` (on the signal itself) or the `untrack()` function.
@@ -90,3 +88,4 @@ effect(() => {
   target.value = currentTarget + currentSource;
 });
 ```
+

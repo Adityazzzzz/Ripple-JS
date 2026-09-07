@@ -3,11 +3,9 @@ title: "Svelte Integration"
 description: "Use Ripple in Svelte 3/4 applications."
 ---
 
-import { Steps } from '@astrojs/starlight/components';
-
 Ripple integrates seamlessly with Svelte's built-in store contract, allowing you to use the `$` prefix syntax.
 
-<Steps>
+
 1. Install:
    ```bash
    npm i ripple-reactive
@@ -16,7 +14,7 @@ Ripple integrates seamlessly with Svelte's built-in store contract, allowing you
    ```ts
    import { toStore, toReadableStore, fromStore } from 'ripple-reactive/svelte';
    ```
-</Steps>
+
 
 ## Svelte Store Contract
 
@@ -75,3 +73,4 @@ Converts any Svelte store back into a Ripple `Signal`.
   });
 </script>
 ```
+

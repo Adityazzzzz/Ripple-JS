@@ -2,8 +2,6 @@
 title: "Resource"
 description: "Handle async data fetching and state"
 ---
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 The `resource` utility simplifies asynchronous data fetching. It automatically tracks loading and error states and can re-fetch when source signals change.
 
 ## Usage
@@ -39,3 +37,4 @@ effect(() => {
 ```
 
 Whenever `userId.value` changes, `userResource` will automatically run the fetcher again.
+

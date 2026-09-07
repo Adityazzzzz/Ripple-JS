@@ -2,8 +2,6 @@
 title: "Persisted Signal"
 description: "Sync signals with localStorage"
 ---
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 `persistedSignal` creates a signal that automatically synchronizes its value with `localStorage` (or `sessionStorage`), persisting state across page reloads and even across different tabs.
 
 ## Usage
@@ -32,3 +30,4 @@ const userSetting = persistedSignal('settings', { theme: 'dark', retries: 3 }, {
   deserialize: (str) => JSON.parse(str)
 });
 ```
+

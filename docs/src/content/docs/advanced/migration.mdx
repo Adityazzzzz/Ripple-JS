@@ -3,8 +3,6 @@ title: "Migration Guide"
 description: "How to migrate to Ripple from other reactive libraries."
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 Ripple's API was designed to feel familiar to developers coming from other ecosystems.
 
 ## From Vue Reactivity
@@ -39,8 +37,8 @@ Ripple is practically a drop-in replacement for Preact Signals in core logic.
 
 Solid uses getter/setter tuples instead of object properties. Ripple supports this via `signal.tuple`.
 
-<Tabs>
-  <TabItem label="SolidJS">
+
+  **SolidJS**
     ```ts
     const [count, setCount] = createSignal(0);
     const double = createMemo(() => count() * 2);
@@ -48,8 +46,8 @@ Solid uses getter/setter tuples instead of object properties. Ripple supports th
     createEffect(() => console.log(double()));
     setCount(1);
     ```
-  </TabItem>
-  <TabItem label="Ripple">
+  
+  **Ripple**
     ```ts
     const [count, setCount] = signal.tuple(0);
     const double = computed(() => count() * 2);
@@ -57,5 +55,6 @@ Solid uses getter/setter tuples instead of object properties. Ripple supports th
     effect(() => console.log(double.value));
     setCount(1);
     ```
-  </TabItem>
-</Tabs>
+  
+
+

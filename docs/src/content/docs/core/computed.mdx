@@ -3,8 +3,6 @@ title: "Computed Values"
 description: "Derived state that updates automatically when dependencies change"
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 Computed values allow you to derive new data from existing signals. They are like signals, but their value is calculated automatically by a function you provide, rather than being set manually.
 
 ## Creating a Computed
@@ -107,9 +105,9 @@ const filteredUsers = computed(
 );
 ```
 
-<Aside>
+> 
 `memo(fn)` is provided as an alias for `computed(fn)` if you prefer React-like terminology!
-</Aside>
+
 
 ## Computed vs Effect
 
@@ -137,3 +135,4 @@ const last = signal("Smith");
 
 const full = computed(() => `${first.value} ${last.value}`);
 ```
+

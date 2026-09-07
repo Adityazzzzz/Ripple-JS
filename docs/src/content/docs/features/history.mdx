@@ -2,8 +2,6 @@
 title: "History (Undo/Redo)"
 description: "Add undo and redo capabilities to any signal"
 ---
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 The `createHistory` feature lets you effortlessly add undo and redo functionality to a signal.
 
 ## Usage
@@ -47,3 +45,4 @@ You can limit the number of states kept in history to save memory:
 const text = signal('');
 const history = createHistory(text, { limit: 50 });
 ```
+

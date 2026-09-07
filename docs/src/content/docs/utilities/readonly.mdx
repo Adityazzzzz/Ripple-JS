@@ -2,8 +2,6 @@
 title: "Readonly"
 description: "Create a read-only view of a signal"
 ---
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 The `readonly` utility wraps a signal and returns a `ReadonlySignal`. This prevents the value from being modified directly through the wrapper.
 
 ## Usage
@@ -40,3 +38,4 @@ const counter = createCounter();
 counter.increment();
 console.log(counter.count.value); // 1
 ```
+

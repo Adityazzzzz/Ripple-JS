@@ -3,8 +3,6 @@ title: "Signals"
 description: "The core reactive primitive in Ripple.js for managing state"
 ---
 
-import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
-
 Signals are the foundation of reactivity in Ripple.js. They hold a value and automatically notify anyone who is interested when that value changes.
 
 Think of a signal as a box that holds a value. When you look inside the box (read the value), Ripple remembers that you looked. When you put something new in the box (update the value), Ripple taps you on the shoulder to let you know it changed.
@@ -40,9 +38,9 @@ count.value += 1;
 console.log(count.value); // 2
 ```
 
-<Aside type="tip">
+> **tip**: 
 When you read `.value` inside a reactive context (like an `effect` or `computed`), that context automatically subscribes to the signal.
-</Aside>
+
 
 ## Reading Without Tracking (`.peek()`)
 
@@ -97,7 +95,7 @@ name.value = "Bob";
 name.value = "Bob"; 
 ```
 
-<Aside type="caution">
+> **caution**: 
 Because Ripple uses `Object.is()`, mutating an object or array in place won't trigger updates! You must provide a *new* object or array reference.
 
 ```ts
@@ -109,7 +107,7 @@ user.value.name = "Bob";
 // ✅ GOOD: Reassign with a new object
 user.value = { ...user.value, name: "Bob" };
 ```
-</Aside>
+
 
 ## TypeScript
 
@@ -152,3 +150,4 @@ function handleInput(event: Event) {
 const isModalOpen = signal(false);
 const toggleModal = () => isModalOpen.value = !isModalOpen.value;
 ```
+

@@ -2,8 +2,6 @@
 title: "Previous"
 description: "Track the previous value of a signal"
 ---
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 The `previous` utility creates a readonly signal that always holds the *previous* value of another signal.
 
 ## Usage
@@ -38,3 +36,4 @@ const slideDirection = computed(() => {
   return currentStep.value > prevStep.value ? 'slide-left' : 'slide-right';
 });
 ```
+

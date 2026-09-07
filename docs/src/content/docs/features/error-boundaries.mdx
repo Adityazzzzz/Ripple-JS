@@ -2,8 +2,6 @@
 title: "Error Boundaries"
 description: "Catch errors inside effects safely"
 ---
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 If an error is thrown inside an `effect`, it can crash the reactive graph. `catchError` allows you to wrap effect logic and handle errors gracefully.
 
 ## Usage
@@ -26,3 +24,4 @@ catchError(
 ```
 
 This ensures that even if the first function throws, the application doesn't crash, and you have a chance to log the error or update an error state signal.
+

@@ -2,8 +2,6 @@
 title: "Debounced & Throttled"
 description: "Control the rate at which effects run and signals update"
 ---
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 Ripple provides utilities to limit how often your reactive code runs, which is crucial for performance when dealing with rapid updates like typing or scrolling.
 
 ## Debounced Effect
@@ -64,3 +62,4 @@ throttledEffect(() => {
   console.log('Scroll position:', scrollY.value);
 }, 100);
 ```
+

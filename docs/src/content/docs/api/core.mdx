@@ -3,8 +3,6 @@ title: "Core API Reference"
 description: "Reference for Ripple's core reactive primitives."
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 ## `signal`
 Creates a reactive state variable.
 
@@ -105,3 +103,4 @@ scope.dispose(); // Cleans up all effects inside
 
 ## `onCleanup` & `onDispose`
 `onCleanup` registers a cleanup function inside an `effect`. `onDispose` registers a cleanup function inside a `Scope`.
+

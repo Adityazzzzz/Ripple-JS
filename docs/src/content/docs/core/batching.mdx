@@ -3,8 +3,6 @@ title: "Batching"
 description: "Optimize performance by grouping multiple signal updates"
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 By default, every time you update a signal's value, Ripple immediately notifies subscribers and runs any associated effects. Usually, this is fast enough. However, if you are updating multiple signals sequentially, you might trigger the same effect multiple times unnecessarily.
 
 **Batching** allows you to group multiple state updates together, ensuring that effects only run *once* after all the updates are complete.
@@ -88,7 +86,8 @@ batch(() => {
 // Effects run here, after the outermost batch finishes
 ```
 
-<Aside>
+> 
 **When you DON'T need batch:** 
 You only need to use `batch` for sequential updates you trigger manually. If multiple signals change as a result of a single event loop tick, you might still want batching to prevent synchronous layout thrashing. However, Ripple's internal computations (like nested `computed` values) are already glitch-free and don't require manual batching to resolve dependencies correctly.
-</Aside>
+
+

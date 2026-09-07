@@ -2,8 +2,6 @@
 title: "Watch"
 description: "Watch a signal and run a callback when it changes"
 ---
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 The `watch` utility allows you to observe a specific reactive value and run a callback whenever it changes. Unlike `effect`, which automatically tracks all dependencies, `watch` explicitly watches a single source.
 
 ## Usage
@@ -52,3 +50,4 @@ unwatch();
 ## Comparison with Vue `watch`
 
 If you are coming from Vue, `watch` in Ripple behaves very similarly to Vue's `watch`, providing both the new and old values and accepting an `immediate` option. However, it's designed to work standalone or with any framework adapter.
+

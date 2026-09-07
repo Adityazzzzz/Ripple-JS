@@ -2,8 +2,6 @@
 title: "Type Guards"
 description: "Check if a value is a signal or computed"
 ---
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 Ripple provides type guards to help you identify reactive objects at runtime.
 
 ## `isSignal`
@@ -56,3 +54,4 @@ function unwrap(value) {
   return isReactive(value) ? value.value : value;
 }
 ```
+

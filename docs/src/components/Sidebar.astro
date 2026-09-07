@@ -1,0 +1,113 @@
+---
+// Sidebar.astro — Documentify-style left navigation
+interface Props {
+  currentPath: string;
+}
+const { currentPath } = Astro.props;
+
+const sidebar = [
+  {
+    title: 'Introduction',
+    items: [
+      { label: 'Getting Started', href: '/getting-started/introduction' },
+      { label: 'Quick Start', href: '/getting-started/quick-start' },
+      { label: 'Installation', href: '/getting-started/installation' },
+      { label: 'Thinking in Signals', href: '/getting-started/thinking-in-signals' },
+    ],
+  },
+  {
+    title: 'Core Concepts',
+    items: [
+      { label: 'Signals', href: '/core/signals' },
+      { label: 'Computed Values', href: '/core/computed' },
+      { label: 'Effects', href: '/core/effects' },
+      { label: 'Batching', href: '/core/batching' },
+      { label: 'Scopes', href: '/core/scopes' },
+      { label: 'Untrack', href: '/core/untrack' },
+    ],
+  },
+  {
+    title: 'Utilities',
+    items: [
+      { label: 'Watch', href: '/utilities/watch' },
+      { label: 'Derive', href: '/utilities/derive' },
+      { label: 'Subscribe', href: '/utilities/subscribe' },
+      { label: 'Previous', href: '/utilities/previous' },
+      { label: 'Debounced & Throttled', href: '/utilities/debounced-throttled' },
+      { label: 'Readonly', href: '/utilities/readonly' },
+      { label: 'Type Guards', href: '/utilities/type-guards' },
+      { label: 'Memo', href: '/utilities/memo' },
+    ],
+  },
+  {
+    title: 'Framework Features',
+    items: [
+      { label: 'Store', href: '/features/store' },
+      { label: 'History (Undo/Redo)', href: '/features/history' },
+      { label: 'Persisted Signal', href: '/features/persisted-signal' },
+      { label: 'Resource', href: '/features/resource' },
+      { label: 'Collections', href: '/features/collections' },
+      { label: 'Error Boundaries', href: '/features/error-boundaries' },
+      { label: 'Promise Interop', href: '/features/promise-interop' },
+    ],
+  },
+  {
+    title: 'Integrations',
+    items: [
+      { label: 'React', href: '/integrations/react' },
+      { label: 'Vue 3', href: '/integrations/vue' },
+      { label: 'Svelte', href: '/integrations/svelte' },
+      { label: 'Vanilla JS', href: '/integrations/vanilla' },
+    ],
+  },
+  {
+    title: 'API Reference',
+    items: [
+      { label: 'Core API', href: '/api/core' },
+      { label: 'Utilities API', href: '/api/utilities' },
+      { label: 'Features API', href: '/api/features' },
+      { label: 'DevTools API', href: '/api/devtools' },
+    ],
+  },
+  {
+    title: 'Advanced',
+    items: [
+      { label: 'Architecture', href: '/advanced/architecture' },
+      { label: 'Performance', href: '/advanced/performance' },
+      { label: 'Bundle Size', href: '/advanced/bundle-size' },
+      { label: 'Migration Guide', href: '/advanced/migration' },
+    ],
+  },
+];
+
+function isActive(href: string) {
+  return currentPath === href || currentPath === href + '/';
+}
+---
+
+<aside class="hidden lg:block w-64 flex-shrink-0 border-r border-gray-100 h-[calc(100vh-4rem)] sticky top-16 overflow-y-auto py-6 px-4">
+  <nav class="space-y-6">
+    {sidebar.map((group) => (
+      <div>
+        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-3">{group.title}</h3>
+        <ul class="space-y-0.5">
+          {group.items.map((item) => (
+            <li>
+              <a 
+                href={item.href}
+                class:list={[
+                  'block px-3 py-1.5 text-sm rounded-lg transition-all duration-150',
+                  isActive(item.href)
+                    ? 'text-orange-600 bg-orange-50 font-semibold border-l-[3px] border-orange-500 -ml-[3px]'
+                    : 'text-gray-600 hover:text-orange-600 hover:bg-gray-50'
+                ]}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </nav>
+</aside>

@@ -3,8 +3,6 @@ title: "Scopes"
 description: "Manage memory and lifecycle of reactive primitives"
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 When you create effects or computeds, they allocate memory and set up subscriptions. In long-running applications (like SPAs), you need a way to clean them up when they are no longer needed (e.g., when a user navigates away from a page).
 
 **Scopes** provide a way to group reactive primitives together so they can all be disposed of at once.
@@ -97,9 +95,10 @@ parent.dispose();
 
 ## Best Practices
 
-<Aside type="tip">
+> **tip**: 
 **Use Scopes for Framework Integrations!**
 If you are using Ripple.js inside vanilla JS or building a custom UI framework, scopes are essential for preventing memory leaks. Tie a `createScope()` to the mounting of a component, and call `.dispose()` when the component unmounts.
-</Aside>
+
 
 If you are using the provided framework adapters (`@ripple-reactive/react`, etc.), the adapter handles component-level scopes for you under the hood! You generally only need manual scopes when building vanilla JS logic outside of components.
+

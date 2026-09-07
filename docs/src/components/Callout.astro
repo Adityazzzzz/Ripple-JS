@@ -1,0 +1,28 @@
+---
+// Callout.astro — Replaces Starlight's <Aside>
+interface Props {
+  type?: 'note' | 'tip' | 'caution' | 'danger';
+  title?: string;
+}
+
+const { type = 'note', title } = Astro.props;
+
+const styles: Record<string, { bg: string; border: string; icon: string; heading: string }> = {
+  note: { bg: 'bg-blue-50', border: 'border-blue-400', icon: 'ℹ️', heading: title || 'Note' },
+  tip: { bg: 'bg-emerald-50', border: 'border-emerald-400', icon: '💡', heading: title || 'Tip' },
+  caution: { bg: 'bg-amber-50', border: 'border-amber-400', icon: '⚠️', heading: title || 'Caution' },
+  danger: { bg: 'bg-red-50', border: 'border-red-400', icon: '🚨', heading: title || 'Danger' },
+};
+
+const s = styles[type];
+---
+
+<div class={`${s.bg} border-l-4 ${s.border} rounded-r-xl p-4 my-6`}>
+  <div class="flex items-center gap-2 font-semibold text-gray-800 text-sm mb-1">
+    <span>{s.icon}</span>
+    <span>{s.heading}</span>
+  </div>
+  <div class="text-sm text-gray-600 leading-relaxed [&>p]:m-0">
+    <slot />
+  </div>
+</div>

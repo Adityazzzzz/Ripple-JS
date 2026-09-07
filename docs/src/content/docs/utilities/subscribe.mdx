@@ -2,8 +2,6 @@
 title: "Subscribe"
 description: "Listen to a signal without automatic dependency tracking"
 ---
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 The `subscribe` utility allows you to listen to a specific signal and run a callback when it updates.
 
 ## Usage
@@ -26,3 +24,4 @@ name.value = 'Bob'; // Logs: Name is now: Bob
 - **`subscribe`**: Only listens to the specific signal you pass it. It does not track other signals read inside the callback.
 
 Use `subscribe` when you want a simple listener without the magic of automatic tracking, or when integrating with non-reactive code.
+

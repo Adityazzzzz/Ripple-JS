@@ -3,8 +3,6 @@ title: "Architecture"
 description: "How Ripple's reactive engine works under the hood."
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 Ripple uses a **Push-Pull** reactive architecture, specifically designed to eliminate redundant calculations and the "glitch" problem found in naive reactive implementations.
 
 ## The Push-Pull Model
@@ -24,10 +22,11 @@ Ripple assigns depth ranks to nodes. It ensures `B` and `C` are updated before `
 
 ## Link Pooling
 
-<Aside type="tip">
+> **tip**: 
 **Performance Secret**
 Instead of creating new Set or Array instances to track connections between nodes, Ripple uses a doubly-linked list with pre-allocated node objects ("Link Pooling"). This drastically reduces Garbage Collection (GC) overhead during high-frequency graph updates.
-</Aside>
+
 
 ## Why Ripple is Glitch-Free
 A glitch occurs when a computed value temporarily evaluates using a mix of old and new data. Because Ripple recursively checks dependency timestamps and updates in topological order, it mathematically guarantees that a node only evaluates when all its upstream dependencies are fully resolved.
+

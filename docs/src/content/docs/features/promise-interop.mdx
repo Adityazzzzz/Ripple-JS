@@ -2,8 +2,6 @@
 title: "Promise Interop"
 description: "Convert a Promise into reactive signals"
 ---
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 Sometimes you have a one-shot `Promise` (like an initialization task) and you want to bind its state to your UI. `fromPromise` does exactly that.
 
 ## Usage
@@ -23,3 +21,4 @@ effect(() => {
 ```
 
 Unlike `resource`, `fromPromise` does not refetch. It simply wraps a single, existing Promise in reactive state.
+

@@ -2,8 +2,6 @@
 title: "Collections"
 description: "Reactive Maps and Arrays"
 ---
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 While you can store arrays and objects in a standard `signal`, mutating them (like `arr.push(1)`) won't trigger updates unless you reassign the signal entirely. Reactive Collections provide fine-grained reactivity for data structures.
 
 ## `reactiveArray()`
@@ -42,3 +40,4 @@ effect(() => {
 // Triggers the effect
 userCache.set('bob', { age: 30 });
 ```
+

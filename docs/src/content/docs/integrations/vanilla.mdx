@@ -3,8 +3,6 @@ title: "Vanilla JS Integration"
 description: "Use Ripple in plain JavaScript without any build tools."
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 Ripple is designed to work beautifully without any UI framework. You can use it directly in the browser to power interactive UIs.
 
 ## CDN Usage
@@ -79,6 +77,7 @@ function createCounter(element: HTMLElement) {
 createCounter(document.getElementById('counter-app')!);
 ```
 
-<Aside>
+> 
 Since Vanilla JS doesn't have an automatic component unmount lifecycle, remember that long-living effects on elements that get removed from the DOM could cause memory leaks. You can use the returned `dispose` function from `effect()` to clean them up, or use `createScope()` to manage groups of effects.
-</Aside>
+
+

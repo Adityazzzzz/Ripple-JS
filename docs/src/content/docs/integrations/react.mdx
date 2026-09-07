@@ -3,11 +3,9 @@ title: "React Integration"
 description: "Use Ripple in React applications with the official bindings."
 ---
 
-import { Tabs, TabItem, Steps, Aside } from '@astrojs/starlight/components';
-
 Ripple provides seamless integration with React through `ripple-reactive/react`.
 
-<Steps>
+
 1. Install the core library and React adapter:
    ```bash
    npm i ripple-reactive
@@ -16,7 +14,7 @@ Ripple provides seamless integration with React through `ripple-reactive/react`.
    ```ts
    import { useSignal, useComputed, useSignalValue, useSignalEffect } from 'ripple-reactive/react';
    ```
-</Steps>
+
 
 ## Hooks
 
@@ -84,11 +82,12 @@ function Logger() {
 
 ## Global vs Local Signals
 
-<Aside type="tip">
+> **tip**: 
 **When to use which?**
 - Use **Global signals** (`signal` outside components + `useSignalValue`) for application state that multiple components need to access or modify.
 - Use **Local signals** (`useSignal` inside components) for temporary UI state like form inputs or toggles.
-</Aside>
+
 
 ## How it Works
 The React adapter uses React's `useSyncExternalStore` under the hood to ensure tear-free rendering and compatibility with Concurrent React features.
+
