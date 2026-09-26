@@ -2,7 +2,8 @@ import { CLEAN, DIRTY, type NodeState } from './constants.js';
 import type { Link } from './link.js';
 import type { ReactiveNode, ReadonlySignal, ComputedOptions } from './types.js';
 import { ComputedBrand } from './types.js';
-import { track, updateIfDirty, setActiveSubscriber, startTracking, endTracking, propagate } from './graph.js';
+import { track, updateIfDirty, setActiveSubscriber, startTracking, endTracking, propagate, clearDependencies } from './graph.js';
+import { getCurrentScope } from './effect.js';
 
 /**
  * Internal node representing a computed (derived) reactive value.
@@ -24,6 +25,7 @@ class ComputedNode<T> implements ReactiveNode {
   _initialized = false;
   _compute: () => T;
   _equals: (a: T, b: T) => boolean;
+  _disposed = false;
 
   readonly [ComputedBrand] = true as const;
 
@@ -33,11 +35,31 @@ class ComputedNode<T> implements ReactiveNode {
   }
 
   /**
+   * Dispose this computed node, disconnecting it from the reactive graph.
+   * After disposal, reading .value returns the last cached value without tracking.
+   */
+  _dispose(): void {
+    if (this._disposed) return;
+    this._disposed = true;
+    clearDependencies(this);
+    this._subHead = null;
+    this._subTail = null;
+  }
+
+  /**
+   * Public dispose method for manual cleanup.
+   */
+  dispose(): void {
+    this._dispose();
+  }
+
+  /**
    * Read the computed value.
    * Triggers lazy re-evaluation if the node is dirty.
    * Registers a dependency if inside a tracked context.
    */
   get value(): T {
+    if (this._disposed) return this._value;
     // Pull phase: update if needed
     updateComputed(this);
     // Register dependency on this computed
@@ -50,6 +72,7 @@ class ComputedNode<T> implements ReactiveNode {
    * Still triggers evaluation if dirty (to ensure freshness).
    */
   peek(): T {
+    if (this._disposed) return this._value;
     updateComputed(this);
     return this._value;
   }
@@ -135,5 +158,13 @@ function updateComputed<T>(node: ComputedNode<T>): void {
  * ```
  */
 export function computed<T>(compute: () => T, options?: ComputedOptions<T>): ReadonlySignal<T> {
-  return new ComputedNode(compute, options) as unknown as ReadonlySignal<T>;
+  const node = new ComputedNode(compute, options);
+  
+  // Register with active scope for automatic disposal
+  const scope = getCurrentScope();
+  if (scope !== null && typeof (scope as any)._addChild === 'function') {
+    (scope as any)._addChild(node);
+  }
+  
+  return node as unknown as ReadonlySignal<T>;
 }

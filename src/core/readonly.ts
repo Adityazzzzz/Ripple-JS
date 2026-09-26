@@ -33,7 +33,7 @@ export function readonly<T>(source: Signal<T> | ReadonlySignal<T>): ReadonlySign
       // Track the underlying source node so subscribers of this
       // readonly wrapper are notified when the source changes
       track(sourceNode);
-      return source.value;
+      return source.peek();
     },
     peek(): T {
       return source.peek();
