@@ -2,6 +2,28 @@
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
 
+/* Docly Deep Dark Mode Overrides */
+:root.dark {
+  --background: 0 0% 2%; 
+  --foreground: 0 0% 98%;
+  --border: 0 0% 12%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 60%;
+  --accent: 0 0% 10%;
+  --accent-foreground: 0 0% 98%;
+  --card: 0 0% 4%;
+  --popover: 0 0% 4%;
+  --primary: 0 0% 98%;
+  --primary-foreground: 0 0% 9%;
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+}
+
 html {
   scrollbar-gutter: stable;
 }
