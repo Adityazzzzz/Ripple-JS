@@ -1,13 +1,44 @@
 ---
-title: Hello World
-description: Your first document
+title: Introduction
+description: A standalone, framework-agnostic reactive utility library.
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+Most reactivity systems are locked inside UI frameworks (React, Vue, Solid). If you want signals and effects in a Node.js script, a game engine, a web worker, or a vanilla JS project, you're stuck importing a framework's internals.
 
-## What is Next?
+<Callout type="idea">
+  <strong>Ripple.js is reactivity as a utility, not a framework byproduct.</strong> It gives you fine-grained reactive primitives that work anywhere JavaScript runs.
+</Callout>
+
+## Explore the Docs
 
 <Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
+  <Card title="Core Primitives" description="Learn about Signals, Computed, and Effects." href="/docs/core-primitives" />
+  <Card title="State Management" description="Stores, Undo/Redo History, and Persistence." href="/docs/state-management" />
+  <Card title="Framework Adapters" description="First-class React, Vue 3, and Svelte hooks." href="/docs/frameworks" />
 </Cards>
+
+## Installation
+
+You can install Ripple.js using your preferred package manager.
+
+```bash
+npm install ripple-reactive
+```
+
+## Quick Start
+
+```ts
+import { signal, computed, effect } from 'ripple-reactive';
+
+const count = signal(0);
+const double = computed(() => count.value * 2);
+
+effect(() => {
+  console.log(`Count: ${count.value}, Double: ${double.value}`);
+});
+// → "Count: 0, Double: 0"
+
+// Mutations automatically trigger downstream effects
+count.value = 5;
+// → "Count: 5, Double: 10" ✨ automatic!
+```
