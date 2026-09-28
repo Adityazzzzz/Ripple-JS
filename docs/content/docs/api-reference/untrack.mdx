@@ -1,0 +1,56 @@
+---
+title: untrack()
+description: Reads a signal without subscribing to its future updates.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Executes a function and pauses the reactive tracking engine during its execution. Any signals read inside the `untrack` block will return their current value, but they will not be registered as dependencies for the surrounding effect or computed value.
+
+```ts
+function untrack<T>(untrackFn: () => T): T;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `untrackFn` | `() => T` | A synchronous function containing the signal reads you wish to ignore. |
+
+### Returns
+
+Returns the result of the `untrackFn` function.
+
+## Usage
+
+### Avoiding Unwanted Effect Triggers
+
+A common use case for `untrack` is when an effect needs to read the current state of a signal to perform an action, but you don't want that action to re-run if only that secondary signal changes.
+
+```ts
+import { signal, effect, untrack } from 'ripple-reactive';
+
+const triggerSync = signal(0);
+const currentUser = signal('ADITYA SING');
+
+effect(() => {
+  // This effect subscribes to `triggerSync`
+  console.log(`Syncing data for sync ID: ${triggerSync.value}`);
+  
+  // We need the user's name for the sync payload, but we DO NOT want 
+  // the effect to run every time `currentUser` changes.
+  const name = untrack(() => currentUser.value);
+  
+  console.log(`Payload sent for user: ${name}`);
+});
+
+// Triggers the effect ✅
+triggerSync.value++; 
+
+// Does NOT trigger the effect ❌
+currentUser.value = 'Guest'; 
+```
+
+<Callout type="info">
+  <strong>Shortcut:</strong> If you only need to read a single signal without tracking it, you can call `.peek()` directly on the signal instead of wrapping it in `untrack()`. (e.g., `currentUser.peek()`).
+</Callout>
