@@ -1,0 +1,74 @@
+---
+title: effect()
+description: Creates a reactive side-effect that automatically re-runs when dependencies change.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Creates a side-effect that subscribes to any signals read during its execution. The effect runs immediately upon creation, and then automatically re-runs whenever any of its tracked signals are mutated.
+
+```ts
+function effect(effectFn: (onCleanup: (cleanupFn: () => void) => void) => void): () => void;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `effectFn` | `Function` | The function to execute. It receives an `onCleanup` callback as its first argument to register cleanup logic. |
+
+### Returns
+
+Returns a disposal function (`() => void`). Calling this function will permanently stop the effect from tracking dependencies and re-running.
+
+## Usage
+
+### Basic Side-Effect
+
+Effects are typically used for synchronizing reactive state with external systems, such as the DOM, network requests, or console logging.
+
+```ts
+import { signal, effect } from 'ripple-reactive';
+
+const count = signal(0);
+
+// Runs immediately, logging "Count is: 0"
+const dispose = effect(() => {
+  console.log(`Count is: ${count.value}`);
+});
+
+// Automatically triggers the effect again
+count.value = 1;
+
+// Stops the effect permanently
+dispose();
+```
+
+### Cleanup Functions
+
+When an effect creates a subscription, timer, or network request, you often need to clean it up before the effect runs again (to avoid memory leaks or duplicate listeners). Use the `onCleanup` parameter provided to the effect callback.
+
+```ts
+import { signal, effect } from 'ripple-reactive';
+
+const userId = signal('u_123');
+
+effect((onCleanup) => {
+  const controller = new AbortController();
+  
+  fetch(`https://api.example.com/users/${userId.value}`, {
+    signal: controller.signal
+  }).then(res => res.json())
+    .then(data => console.log(data));
+
+  // Cancels the fetch request if userId changes before it completes,
+  // or if the effect is manually disposed.
+  onCleanup(() => {
+    controller.abort();
+  });
+});
+```
+
+<Callout type="warn">
+  <strong>Infinite Loops:</strong> Avoid mutating a signal inside an effect if that same signal is also read within the effect. This will cause the effect to trigger itself recursively.
+</Callout>
