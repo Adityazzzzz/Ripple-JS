@@ -1,0 +1,119 @@
+---
+title: State Management
+description: Built-in utilities for complex state, undo/redo history, and persistence.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+While fine-grained signals are perfect for isolated values, applications often require structured state, time-travel debugging, and local storage persistence. Ripple.js provides these as zero-dependency utility functions.
+
+## Reactive Stores
+
+A `store` is a deeply reactive proxy around a standard JavaScript object or array. Instead of creating individual signals for every property, you can wrap an entire object.
+
+```ts
+import { store, effect } from 'ripple-reactive';
+
+const user = store({
+  name: 'Aditya',
+  preferences: {
+    theme: 'dark',
+    notifications: true
+  }
+});
+
+effect(() => {
+  // This effect only tracks `user.preferences.theme`
+  console.log(`Theme switched to: ${user.preferences.theme}`);
+});
+
+// Triggers the effect
+user.preferences.theme = 'light';
+
+// Does NOT trigger the effect (name wasn't read inside the effect)
+user.name = 'ADITYA SING';
+```
+
+Stores use JavaScript Proxies under the hood to intercept property access. This means nested objects and arrays are automatically made reactive as you access them.
+
+## Time-Travel (Undo/Redo)
+
+Ripple.js includes a built-in `createHistory` wrapper that attaches a time-travel timeline to any signal or store. This is exceptionally useful for canvas editors, rich text interfaces, or complex forms.
+
+```ts
+import { signal } from 'ripple-reactive';
+import { createHistory } from 'ripple-reactive/history';
+
+const documentText = signal('');
+const { undo, redo, canUndo, canRedo, history } = createHistory(documentText, {
+  maxDepth: 50 // Limit the stack size to prevent memory leaks
+});
+
+// User types
+documentText.value = 'Hello';
+documentText.value = 'Hello World';
+
+console.log(documentText.value); // 'Hello World'
+
+if (canUndo()) {
+  undo();
+  console.log(documentText.value); // 'Hello'
+}
+
+redo();
+console.log(documentText.value); // 'Hello World'
+```
+
+## Persistence
+
+The `persist` utility automatically syncs a signal or store to the browser's `localStorage` or `sessionStorage`. It handles JSON serialization and deserialization automatically.
+
+<Tabs items={['Local Storage', 'Session Storage']}>
+  <Tab value="Local Storage">
+  ```ts
+  import { signal } from 'ripple-reactive';
+  import { persist } from 'ripple-reactive/persistence';
+
+  // Initializes with the value from localStorage if it exists,
+  // otherwise defaults to 'dark'.
+  const theme = persist(signal('dark'), {
+    key: 'ripple-app-theme',
+    storage: window.localStorage
+  });
+
+  // Automatically saved to localStorage instantly
+  theme.value = 'light';
+  ```
+  </Tab>
+
+  <Tab value="Session Storage">
+  ```ts
+  import { store } from 'ripple-reactive';
+  import { persist } from 'ripple-reactive/persistence';
+
+  const cart = persist(store({ items: [], total: 0 }), {
+    key: 'ecommerce-cart',
+    storage: window.sessionStorage
+  });
+
+  // Automatically syncs the entire object to sessionStorage
+  cart.items.push({ id: 1, name: 'Mechanical Keyboard' });
+  ```
+  </Tab>
+</Tabs>
+
+## Combining Utilities
+
+Because Ripple.js utilities are highly composable, you can wrap a persistent store in a history tracker to create an undo-able state that survives page reloads.
+
+```ts
+const settings = persist(store({ volume: 50, brightness: 80 }), {
+  key: 'app-settings',
+  storage: window.localStorage
+});
+
+const settingsHistory = createHistory(settings);
+```
+
+Once you save this, the next logical step is to create the framework adapters guide inside the `content/docs/frameworks/index.mdx` file.
