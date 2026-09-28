@@ -1,17 +1,127 @@
 ---
-title: Components
-description: Components
+title: Interactive Components
+description: Documenting Ripple.js using Tabs, Steps, and Accordions.
 ---
 
-## Code Block
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 
-```js
-console.log('Hello World');
-```
+## Framework Adapters (Tabs)
 
-## Cards
+The `<Tabs>` component is the best way to show how Ripple.js integrates across different frameworks without cluttering the page.
 
-<Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
-</Cards>
+<Tabs items={['React', 'Vue 3', 'Svelte']}>
+  <Tab value="React">
+  ```tsx title="React"
+  import { signal } from 'ripple-reactive';
+  import { useSignalValue } from 'ripple-reactive/react';
+
+  const count = signal(0);
+
+  export function Counter() {
+    const value = useSignalValue(count);
+    return <button onClick={() => count.value++}>{value}</button>;
+  }
+  
+  const count = signal(0);
+  const countRef = toVueRef(count); // Use with v-model
+  ```
+  </Tab>
+  <Tab value="Vue 3">
+  ```vue title="Vue 3"
+  import { signal } from 'ripple-reactive';
+  import { toVueRef } from 'ripple-reactive/vue';
+
+  const count = signal(0);
+  const countRef = toVueRef(count); // Use with v-model
+  ```
+  </Tab>
+  <Tab value="Svelte">
+  ```svelte title="Svelte"
+  <script>
+    import { signal } from 'ripple-reactive';
+    import { toSvelteRef } from 'ripple-reactive/svelte';
+
+    const count = signal(0);
+    const countRef = toSvelteRef(count); // Use with bind:value
+  </script>
+
+  <input type="number" bind:value={$countRef} />
+  <p>Value: {$countRef}</p>
+  ```
+  </Tab>
+</Tabs>
+
+
+Quick Start Guide (Steps)
+The <Steps> component automatically adds a vertical connector line alongside standard markdown headings (like ###) to create a clean, sequential tutorial.
+
+## Installation (Steps)
+
+<Steps>
+  <Step title="Installation">
+    ```bash
+    npm install ripple-reactive
+    ```
+  </Step>
+  <Step title="Quick Start">
+    ```ts
+    import { signal, computed, effect } from 'ripple-reactive';
+
+    const count = signal(0);
+    const double = computed(() => count.value * 2);
+
+    effect(() => {
+      console.log(`Count: ${count.value}, Double: ${double.value}`);
+    });
+    ```
+  </Step>
+</Steps>
+
+## Frequently Asked Questions (Accordions)
+
+<Accordions>
+  <Accordion title="Installation">
+    ```bash
+    npm install ripple-reactive
+    ```
+  </Accordion>
+  <Accordion title="Quick Start">
+    ```ts
+    import { signal, computed, effect } from 'ripple-reactive';
+
+    const count = signal(0);
+    const double = computed(() => count.value * 2);
+
+    effect(() => {
+      console.log(`Count: ${count.value}, Double: ${double.value}`);
+    });
+    ```
+  </Accordion>
+</Accordions>
+
+## Key things to note:
+<Card>
+The Imports: While Callout and Cards are usually mapped globally, advanced interactive elements like Tabs and Accordions often need to be imported at the top of the MDX file.
+
+The items Prop: The <Tabs> component requires the items array to match the value of each <Tab> exactly so it knows how to generate the buttons.
+
+The Steps Syntax: You do not need to wrap every step in a React component; just wrap the entire section in <Steps> and use standard markdown ### for each new number.
+</Card>
+
+<Card>
+The Imports: While Callout and Cards are usually mapped globally, advanced interactive elements like Tabs and Accordions often need to be imported at the top of the MDX file.
+
+The items Prop: The <Tabs> component requires the items array to match the value of each <Tab> exactly so it knows how to generate the buttons.
+
+The Steps Syntax: You do not need to wrap every step in a React component; just wrap the entire section in <Steps> and use standard markdown ### for each new number.
+</Card>
+
+<Card>
+The Imports: While Callout and Cards are usually mapped globally, advanced interactive elements like Tabs and Accordions often need to be imported at the top of the MDX file.
+
+The items Prop: The <Tabs> component requires the items array to match the value of each <Tab> exactly so it knows how to generate the buttons.
+
+The Steps Syntax: You do not need to wrap every step in a React component; just wrap the entire section in <Steps> and use standard markdown ### for each new number.
+</Card>
