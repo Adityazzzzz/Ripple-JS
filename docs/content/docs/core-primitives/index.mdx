@@ -1,0 +1,161 @@
+---
+title: Core Primitives
+description: Understand and utilize the foundational building blocks of Ripple.js.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Signals
+
+Signals are the primary unit of state in Ripple.js. They hold a value and automatically track any functions or computed values that read them. 
+
+Ripple.js provides two different APIs for signals depending on your preference.
+
+<Tabs items={['Object API (Default)', 'Tuple API (Solid.js Style)']}>
+  <Tab value="Object API (Default)">
+
+The Object API uses a `.value` property to read and write the state. This is similar to Vue's `ref` or Preact's `signal`.
+
+```ts
+import { signal } from 'ripple-reactive';
+
+const theme = signal('light');
+
+// Read the value
+console.log(theme.value); // 'light'
+
+// Mutate the value
+theme.value = 'dark';
+```
+
+  </Tab>
+  <Tab value="Tuple API (Solid.js Style)">
+
+The Tuple API returns a getter function and a setter function. This provides stricter read/write boundaries.
+
+```ts
+import { signal } from 'ripple-reactive';
+
+const [theme, setTheme] = signal.tuple('light');
+
+// Read the value
+console.log(theme()); // 'light'
+
+// Mutate the value
+setTheme('dark');
+
+// Mutate using previous state
+setTheme(prev => prev === 'light' ? 'dark' : 'light');
+```
+
+  </Tab>
+</Tabs>
+
+## Computed Values
+
+Computed values derive their state from other signals. They are lazy (they only calculate when read) and memoized (they cache their result until their dependencies change).
+
+```ts
+import { signal, computed } from 'ripple-reactive';
+
+const price = signal(10);
+const quantity = signal(3);
+
+const total = computed(() => price.value * quantity.value);
+
+// The function hasn't run yet.
+console.log(total.value); // 30 (Evaluates here)
+
+price.value = 20; 
+// The computed value is marked as dirty, but doesn't re-evaluate immediately.
+
+console.log(total.value); // 60 (Re-evaluates here)
+```
+
+By default, computed values check for strict equality (`===`) before triggering downstream updates. You can provide a custom equals function to objects or arrays to prevent unnecessary renders.
+
+```ts
+const point = computed(
+  () => ({ x: xSignal.value, y: ySignal.value }),
+  { equals: (a, b) => a.x === b.x && a.y === b.y }
+);
+```
+
+## Effects
+
+Effects are side-effects that run automatically whenever their dependent signals change.
+
+```ts
+import { signal, effect } from 'ripple-reactive';
+
+const status = signal('idle');
+
+// Runs immediately once, then tracks `status.value`
+const stop = effect(() => {
+  console.log(`Current status: ${status.value}`);
+});
+
+status.value = 'running'; // Triggers the effect again
+
+// Dispose the effect when no longer needed
+stop();
+```
+
+### Effect Cleanup
+
+If your effect creates a subscription or a timer, you can register a cleanup function that runs right before the effect re-evaluates or is destroyed.
+
+```ts
+effect((onCleanup) => {
+  const id = setInterval(() => console.log('Polling...'), 1000);
+  
+  onCleanup(() => clearInterval(id));
+});
+```
+
+## Advanced Primitives
+
+### Batching
+
+When you mutate multiple signals in a row, Ripple.js normally triggers effects immediately for each mutation. The `batch` function coalesces these updates so effects only run once.
+
+```ts
+import { signal, effect, batch } from 'ripple-reactive';
+
+const targetRepo = signal('facebook/react');
+const scanStatus = signal('idle');
+const vulnerabilitiesFound = signal(0);
+
+effect(() => {
+  console.log(`[${scanStatus.value}] ${targetRepo.value} - Issues: ${vulnerabilitiesFound.value}`);
+});
+
+// Without batching, the effect would run three times here.
+// With batching, it only runs once at the end.
+batch(() => {
+  targetRepo.value = 'aditya/gitscout';
+  scanStatus.value = 'scanning';
+  vulnerabilitiesFound.value = 14;
+});
+```
+
+### Untracking
+
+Sometimes you need to read a signal inside an effect without subscribing to it. Use `untrack` to read values safely.
+
+```ts
+import { signal, effect, untrack } from 'ripple-reactive';
+
+const loggedIn = signal(true);
+const username = signal('ADITYA SING');
+
+effect(() => {
+  if (loggedIn.value) {
+    // This effect will NOT re-run if `username` changes, 
+    // it only re-runs when `loggedIn` changes.
+    const currentName = untrack(() => username.value);
+    console.log(`Welcome back, ${currentName}`);
+  }
+});
+```
