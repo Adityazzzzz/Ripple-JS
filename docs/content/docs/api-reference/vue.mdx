@@ -1,0 +1,60 @@
+---
+title: Vue Adapters
+description: API reference for the Ripple.js Vue 3 integration.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `ripple-reactive/vue` package exports utilities to bridge Ripple's reactivity engine with Vue 3's native reactivity system. This allows you to use Ripple signals seamlessly inside Vue templates and watchers.
+
+## `toVueRef()`
+
+Wraps a Ripple signal in a native Vue `Ref`. The resulting reference is fully reactive within the Vue ecosystem and perfectly syncs state in both directions.
+
+```ts
+function toVueRef<T>(signal: Signal<T>): Ref<T>;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `signal` | `Signal<T>` | The Ripple signal to convert. |
+
+### Returns
+
+Returns a Vue `Ref<T>`.
+
+## Usage
+
+Because `toVueRef` creates a true two-way binding, mutating the Vue Ref (e.g., via `v-model` or directly in a Vue function) will automatically update the underlying Ripple signal and trigger any framework-agnostic Ripple effects.
+
+```vue
+<script setup>
+import { signal, effect } from 'ripple-reactive';
+import { toVueRef } from 'ripple-reactive/vue';
+
+// 1. Create a core Ripple signal
+const usernameSignal = signal('Aditya');
+
+// 2. Convert to a Vue Ref for the template
+const username = toVueRef(usernameSignal);
+
+// 3. Native Ripple effects still work perfectly
+effect(() => {
+  console.log(`Ripple Effect tracked name change: ${usernameSignal.value}`);
+});
+</script>
+
+<template>
+  <div>
+    <!-- Vue's v-model will mutate both the Vue Ref and the Ripple Signal -->
+    <input v-model="username" type="text" />
+    <p>Welcome, {{ username }}</p>
+  </div>
+</template>
+```
+
+<Callout type="info">
+  <strong>Computed Signals:</strong> You can also pass a Ripple `ComputedSignal` into `toVueRef()`. The resulting Vue Ref will automatically become read-only, preventing accidental template mutations.
+</Callout>
