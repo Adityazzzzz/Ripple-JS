@@ -1,0 +1,113 @@
+---
+title: Framework Adapters
+description: First-class integrations for React, Vue 3, and Svelte.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Ripple.js is completely framework-agnostic and runs perfectly in vanilla JavaScript. However, to make integration into your UI components seamless, we provide official, highly optimized adapters for major frameworks.
+
+These adapters ensure that when a Ripple signal updates, your UI framework's component accurately triggers a re-render.
+
+## React 
+
+The `ripple-reactive/react` package exports specialized hooks to bind signals to React's rendering lifecycle using `useSyncExternalStore` under the hood for tear-free, concurrent-safe rendering.
+
+### `useSignalValue`
+
+Reads a global signal and subscribes the component to its changes.
+
+```tsx
+import { signal } from 'ripple-reactive';
+import { useSignalValue } from 'ripple-reactive/react';
+
+// 1. Define state globally (or via Context)
+const count = signal(0);
+
+export function Counter() {
+  // 2. Bind the signal to the React component
+  const value = useSignalValue(count);
+  
+  return (
+    <button onClick={() => count.value++}>
+      Count: {value}
+    </button>
+  );
+}
+```
+
+### `useSignal`
+
+Creates a local signal that persists across renders, similar to `useState`, but with the performance benefits of fine-grained reactivity.
+
+```ts
+import { useSignal } from 'ripple-reactive/react';
+
+export function LocalCounter() {
+  const count = useSignal(0);
+  
+  return (
+    <button onClick={() => count.value++}>
+      Count: {count.value}
+    </button>
+  );
+}
+```
+
+## Vue 3
+
+The `ripple-reactive/vue` package bridges Ripple signals with Vue's internal reactivity engine, allowing you to use them directly in Vue templates and with `v-model`.
+
+### `toVueRef`
+
+Converts a Ripple signal into a native Vue Ref.
+
+```vue
+<script setup>
+import { signal } from 'ripple-reactive';
+import { toVueRef } from 'ripple-reactive/vue';
+
+// Create a Ripple signal
+const textSignal = signal('Hello Vue');
+
+// Convert it for the Vue template
+const text = toVueRef(textSignal);
+</script>
+
+<template>
+  <main>
+    <!-- Works seamlessly with two-way binding -->
+    <input v-model="text" />
+    <p>You typed: {{ text }}</p>
+  </main>
+</template>
+```
+
+<Callout type="info">
+  Mutating the Vue Ref will automatically mutate the underlying Ripple signal, and vice versa. It is a true two-way bridge.
+</Callout>
+
+## Svelte
+
+The `ripple-reactive/svelte` package exposes a standard Svelte store contract, allowing you to use Svelte's reactive `$` auto-subscription syntax.
+
+### `toSvelteRef`
+
+Wraps a Ripple signal in a Svelte-compatible store interface.
+
+```svelte
+<script>
+  import { signal } from 'ripple-reactive';
+  import { toSvelteRef } from 'ripple-reactive/svelte';
+
+  const countSignal = signal(0);
+  
+  // Create a Svelte store wrapper
+  const count = toSvelteRef(countSignal); 
+</script>
+
+<!-- Use Svelte's native $ prefix to read and subscribe -->
+<button on:click={() => $count++}>
+  Count: {$count}
+</button>
+```
