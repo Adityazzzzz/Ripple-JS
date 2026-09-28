@@ -1,0 +1,68 @@
+---
+title: batch()
+description: Groups multiple signal mutations into a single effect evaluation.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Defers the synchronous triggering of downstream effects until the provided callback function has finished executing. This is crucial for optimizing performance when you need to update multiple related signals at once and want to avoid intermediate, unnecessary re-renders or effect executions.
+
+```ts
+function batch<T>(batchFn: () => T): T;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `batchFn` | `() => T` | A synchronous function containing the state mutations. |
+
+### Returns
+
+Returns the result of the `batchFn` function.
+
+## Usage
+
+### Preventing Multiple Renders
+
+Without `batch`, mutating three separate signals sequentially will synchronously trigger any shared effects three separate times. `batch` ensures the effect only runs once after all mutations are complete.
+
+```ts
+import { signal, effect, batch } from 'ripple-reactive';
+
+const firstName = signal('Aditya');
+const lastName = signal('Singh');
+const age = signal(20);
+
+// This effect depends on all three signals
+effect(() => {
+  console.log(`User: ${firstName.value} ${lastName.value}, Age: ${age.value}`);
+});
+
+// Using batch ensures the effect above only logs ONCE
+// instead of three times.
+batch(() => {
+  firstName.value = 'ADITYA';
+  lastName.value = 'SING';
+  age.value = 21;
+});
+```
+
+### Returning Values
+
+You can return values directly from the batch function if you need to calculate a result during the transaction.
+
+```ts
+const targetId = signal(1);
+
+const result = batch(() => {
+  targetId.value = 2;
+  return 'Transaction Complete';
+});
+
+console.log(result); // 'Transaction Complete'
+```
+
+<Callout type="warn">
+  `batch` only defers effects for synchronous mutations. If you use `await` inside a batch function, any mutations after the `await` will not be batched together with the mutations before it.
+</Callout>
