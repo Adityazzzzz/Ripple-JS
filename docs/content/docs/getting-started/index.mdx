@@ -1,0 +1,99 @@
+---
+title: Quick Start & Installation
+description: Get up and running with Ripple.js and learn the core concepts in under 5 minutes.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Installation
+
+Ripple.js is available on npm and works seamlessly in any JavaScript or TypeScript environment.
+
+<Steps>
+
+### Install the core package
+
+```bash
+npm install ripple-reactive
+```
+
+### (Optional) Install a framework adapter
+
+If you are using React, Vue, or Svelte, install the specific adapter alongside the core library.
+
+```bash
+npm install ripple-reactive react
+```
+
+</Steps>
+
+## Core Concepts
+
+Let's build a simple reactive counter using the core primitives.
+
+## Framework Integration
+
+Ripple.js can be dropped into any major UI framework. Here is how to use the official adapters to bind signals directly to your components.
+
+<Tabs items={['React', 'Vue 3', 'Svelte']}>
+  <Tab value="React">
+  ```tsx
+  import { signal } from 'ripple-reactive';
+  import { useSignalValue } from 'ripple-reactive/react';
+
+  // Define state outside the component
+  const count = signal(0);
+
+  export function Counter() {
+    // Bind the signal to the React component lifecycle
+    const value = useSignalValue(count);
+    
+    return (
+      <button onClick={() => count.value++}>
+        Count: {value}
+      </button>
+    );
+  }
+  ```
+  </Tab>
+
+  <Tab value="Vue 3">
+  ```vue
+  <script setup>
+  import { signal } from 'ripple-reactive';
+  import { toVueRef } from 'ripple-reactive/vue';
+
+  const count = signal(0);
+  const countRef = toVueRef(count); // Connects to Vue's reactivity system
+  </script>
+
+  <template>
+    <button @click="count.value++">
+      Count: {{ countRef }}
+    </button>
+  </template>
+  ```
+  </Tab>
+
+  <Tab value="Svelte">
+  ```svelte
+  <script>
+    import { signal } from 'ripple-reactive';
+    import { toSvelteRef } from 'ripple-reactive/svelte';
+
+    const count = signal(0);
+    const countRef = toSvelteRef(count); // Exposes a Svelte store contract
+  </script>
+
+  <button on:click={() => count.value++}>
+    Count: {$countRef}
+  </button>
+  ```
+  </Tab>
+</Tabs>
+
+<Callout title="Performance Note" type="info">
+  Ripple.js utilizes a push-pull hybrid engine. Mutations push dirty flags instantly, but computed values are lazy and only evaluate when read. This guarantees glitch-free propagation with zero intermediate stale states.
+</Callout>

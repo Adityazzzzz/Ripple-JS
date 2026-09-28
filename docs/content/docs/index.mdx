@@ -1,13 +1,40 @@
 ---
-title: Hello World
-description: Your first document
+title: Introduction
+description: A standalone, framework-agnostic reactive utility library.
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+Most reactivity systems are locked inside UI frameworks (React, Vue, Solid). If you want signals and effects in a Node.js script, a game engine, a web worker, or a vanilla JS project, you're stuck importing a framework's internals.
 
-## What is Next?
+<Callout title="The Core Idea" type="idea">
+  Ripple.js is reactivity as a utility, not a framework byproduct. It gives you fine-grained reactive primitives that work anywhere JavaScript runs.
+</Callout>
+
+## The Problem We Solved
+
+Think of how Zod solved schema validation. Before Zod, validation was scattered across Express middleware and Mongoose schemas. Zod made validation a standalone utility. 
+
+Ripple.js does the same for reactivity. It provides the exact same signals, computed values, and effects that power modern UI engines, extracted into a universal toolkit.
+
+* <strong>Fine-grained reactivity</strong> — Signals, computed values, and side-effects.
+* <strong>Framework-agnostic</strong> — Works seamlessly in Browsers, Node.js, Deno, Bun, and Web Workers.
+* <strong>Tiny & Dependency-free</strong> — ~3.5KB minified + gzipped with zero transitive bloat.
+* <strong>Batteries included</strong> — Stores, undo/redo history, persistence, and collections built-in.
+* <strong>Framework adapters</strong> — First-class React, Vue 3, and Svelte hooks when you need them.
+
+## Glitch-Free Architecture
+
+Ripple.js utilizes a highly optimized push-pull hybrid reactive engine:
+
+1. <strong>Push Phase:</strong> When a signal mutates, dirty flags propagate downstream instantly.
+2. <strong>Pull Phase:</strong> Computed values evaluate lazily only when explicitly read.
+
+This guarantees glitch-free propagation with no intermediate stale values, even in complex diamond dependency graphs. Memory footprint is strictly controlled using intrusive doubly-linked lists and link pooling, resulting in ~60% fewer Garbage Collection (GC) allocations compared to standard array-based dependency tracking.
+
+## Explore the Docs
 
 <Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
+  <Card title="Getting Started" description="Installation, setup, and quick start guide." href="/docs/getting-started" />
+  <Card title="Core Primitives" description="Learn about Signals, Computed, and Effects." href="/docs/core-primitives" />
+  <Card title="State Management" description="Stores, Undo/Redo History, and Persistence." href="/docs/state-management" />
+  <Card title="Framework Adapters" description="First-class React, Vue 3, and Svelte hooks." href="/docs/frameworks" />
 </Cards>

@@ -1,0 +1,41 @@
+---
+title: Ripple.js v1.0.0 is Live!
+description: Announcing the stable release of our zero-dependency reactivity engine.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+After months of development and refining our push-pull reactive graph, <strong>Ripple.js v1.0.0 is officially stable and ready for production.</strong>
+
+## Why we built Ripple.js
+
+Most UI frameworks lock their reactivity engines behind heavy compilers or component lifecycles. If you wanted fine-grained signals in a vanilla JS class or a Node.js worker, you had to either pull in a massive UI library or settle for sub-par, glitchy event emitters. 
+
+Ripple.js extracts the exact same primitives that power modern interfaces (Signals, Computed values, and Effects) into a standalone, ~3.5KB package.
+
+## What's Included in v1.0.0?
+
+- <strong>Core Primitives:</strong> `signal`, `computed`, and `effect`.
+- <strong>Advanced Control:</strong> `batch` for grouping updates and `untrack` for safe reads.
+- <strong>State Management:</strong> Deeply reactive `store` proxies, `createHistory` for undo/redo, and `persist` for `localStorage` syncing.
+- <strong>Framework Adapters:</strong> First-class bindings for <strong>React</strong>, <strong>Vue 3</strong>, and <strong>Svelte</strong>.
+
+## The Engineering: Glitch-Free Architecture
+
+The biggest hurdle in standalone reactivity is the "diamond problem," where a single signal update triggers a computed value to evaluate multiple times with stale intermediate state. 
+
+Ripple.js solves this using a <strong>push-pull hybrid engine</strong>:
+1. <strong>Push:</strong> Mutations instantly propagate "dirty" flags down the dependency graph.
+2. <strong>Pull:</strong> Computed values only actually evaluate when they are explicitly read.
+
+This ensures zero wasted CPU cycles and perfectly consistent state reads.
+
+<Callout type="idea">
+<strong>Memory Optimized:</strong> Memory footprint is strictly controlled using intrusive doubly-linked lists and link pooling, resulting in ~60% fewer GC allocations compared to standard array-based tracking.
+</Callout>
+
+## Get Started
+
+Run `npm install ripple-reactive` or check out the [Quick Start Guide](/docs/getting-started) to start building. 
+
+— <em>ADITYA SING</em>

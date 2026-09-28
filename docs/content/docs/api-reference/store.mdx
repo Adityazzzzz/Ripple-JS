@@ -1,0 +1,80 @@
+---
+title: store()
+description: Creates a deeply reactive proxy for complex objects and arrays.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Creates a deeply reactive object using JavaScript Proxies. Unlike a standard `signal` which only tracks the reassignment of its `.value` property, a `store` automatically tracks the reading and writing of every nested property and array index individually.
+
+```ts
+function store<T extends object>(initialState: T): T;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `initialState` | `T` (object \| array) | The starting object or array to be made reactive. |
+
+### Returns
+
+Returns a transparent proxy of the original object `T`. You interact with it exactly as you would a normal JavaScript object—there is no `.value` wrapper required.
+
+## Usage
+
+### Deep Object Reactivity
+
+When you read a nested property inside an effect, Ripple.js subscribes to that specific property path. Changing an unrelated property will not trigger the effect.
+
+```ts
+import { store, effect } from 'ripple-reactive';
+
+const user = store({
+  name: 'Aditya',
+  settings: { theme: 'dark', notifications: true }
+});
+
+effect(() => {
+  // Only tracks `user.settings.theme`
+  console.log(`Theme is: ${user.settings.theme}`);
+});
+
+// Triggers the effect
+user.settings.theme = 'light';
+
+// Does NOT trigger the effect, because `name` wasn't tracked
+user.name = 'ADITYA SING';
+```
+
+### Arrays and Collections
+
+Stores seamlessly handle standard array operations. Iterating over an array, pushing new items, or mutating an index are all automatically tracked.
+
+```ts
+import { store, effect } from 'ripple-reactive';
+
+const todos = store([
+  { id: 1, text: 'Build Ripple.js', done: false }
+]);
+
+effect(() => {
+  // Tracks the array length and individual item properties
+  console.log(`You have ${todos.length} tasks.`);
+});
+
+// Triggers the effect (length changes)
+todos.push({ id: 2, text: 'Write API Docs', done: false });
+```
+
+<Callout type="warn">
+  Because `store` utilizes standard ES6 Proxies, do not destructure properties out of a store if you want them to remain reactive. Destructuring primitives extracts their current static value and loses the proxy connection.
+</Callout>
+
+```ts
+// ❌ Anti-pattern: Loses reactivity
+const { name } = user; 
+
+// ✅ Correct: Read from the proxy directly when needed
+console.log(user.name); 
+```

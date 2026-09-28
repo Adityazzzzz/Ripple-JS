@@ -1,0 +1,68 @@
+---
+title: Svelte Adapters
+description: API reference for the Ripple.js Svelte integration.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `ripple-reactive/svelte` package provides a seamless bridge between Ripple's reactivity and Svelte's built-in reactive statement engine. It wraps your signals in a standard Svelte store contract.
+
+## `toSvelteRef()`
+
+Converts a Ripple signal into a Svelte-compatible store. This allows you to use Svelte's native auto-subscription syntax (`$`) to read and mutate the signal directly within your Svelte components.
+
+```ts
+function toSvelteRef<T>(signal: Signal<T>): Writable<T>;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `signal` | `Signal<T>` | The Ripple signal to convert. |
+
+### Returns
+
+Returns an object implementing the Svelte `Writable` store contract (`subscribe`, `set`, and `update` methods).
+
+## Usage
+
+Once wrapped, you interact with the Ripple signal exactly as you would a standard `writable()` store from `svelte/store`. Svelte's compiler automatically handles subscribing and unsubscribing when the component mounts and destroys.
+
+```svelte
+<script>
+  import { signal, effect } from 'ripple-reactive';
+  import { toSvelteRef } from 'ripple-reactive/svelte';
+
+  // 1. Create a core Ripple signal
+  const notificationCountSignal = signal(0);
+  
+  // 2. Wrap it for the Svelte compiler
+  const notifications = toSvelteRef(notificationCountSignal);
+
+  // You can still use standard Ripple effects alongside Svelte
+  effect(() => {
+    if (notificationCountSignal.value > 5) {
+      console.log('You have a lot of unread notifications!');
+    }
+  });
+</script>
+
+<main>
+  <!-- Read using the $ prefix -->
+  <p>Unread: {$notifications}</p>
+  
+  <!-- Mutate using the $ prefix -->
+  <button on:click={() => $notifications++}>
+    New Notification
+  </button>
+  
+  <button on:click={() => $notifications = 0}>
+    Clear All
+  </button>
+</main>
+```
+
+<Callout type="info">
+  <strong>Read-Only Stores:</strong> If you pass a Ripple `ComputedSignal` into `toSvelteRef()`, it will return a Svelte `Readable` store contract instead. The Svelte compiler will correctly prevent you from trying to reassign its value using the `$` syntax.
+</Callout>

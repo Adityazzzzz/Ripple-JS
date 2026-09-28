@@ -1,0 +1,77 @@
+---
+title: signal()
+description: Creates a new reactive signal.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Creates a reactive container that holds a value. When the `.value` property is updated, any active computed values or effects that depend on this signal are automatically marked as dirty and re-evaluated.
+
+```ts
+function signal<T>(initialValue: T): Signal<T>;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `initialValue` | `T` | The starting value of the signal. Can be any primitive or object. |
+
+### Returns
+
+Returns a `Signal<T>` object with the following interface:
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| `value` | `T` | A getter/setter property for the current value. |
+| `peek()` | `() => T` | Reads the current value without creating a reactive subscription. |
+
+## Usage
+
+### Basic Initialization
+
+```ts
+import { signal } from 'ripple-reactive';
+
+const count = signal(0);
+console.log(count.value); // 0
+```
+
+### Mutating State
+
+Updating the `.value` property will synchronously push dirty notifications to the reactive graph.
+
+```ts
+const user = signal({ name: 'Aditya' });
+
+// Overwriting the entire object
+user.value = { name: 'ADITYA SING' }; 
+
+// Mutating a property directly (requires manual trigger if not using `store`)
+user.value.name = 'Aditya';
+```
+
+<Callout type="warn">
+  When mutating objects or arrays inside a standard signal, the reference must change for the reactivity engine to detect the update. For deep reactivity, use `store()` instead.
+</Callout>
+
+### Reading without Subscribing
+
+Use `.peek()` inside an effect when you need to check a signal's value without triggering a re-run when that specific signal changes.
+
+```ts
+import { signal, effect } from 'ripple-reactive';
+
+const isLogging = signal(true);
+const errors = signal(0);
+
+effect(() => {
+  // Subscribes to `errors`
+  if (errors.value > 0) {
+    // Reads `isLogging` without subscribing to it
+    if (isLogging.peek()) {
+      console.log('An error occurred!');
+    }
+  }
+});
+```

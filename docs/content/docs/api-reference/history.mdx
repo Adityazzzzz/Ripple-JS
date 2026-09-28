@@ -1,0 +1,90 @@
+---
+title: createHistory()
+description: Attaches undo/redo time-travel capabilities to a signal or store.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Wraps an existing signal or store and automatically tracks its mutations over time. It provides functions to traverse back and forth through the state history, making it trivial to implement undo/redo features in text editors, canvas applications, or complex forms.
+
+```ts
+function createHistory<T>(
+  target: Signal<T> | T, 
+  options?: HistoryOptions
+): HistoryController<T>;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `target` | `Signal<T>` \| `Store<T>` | The reactive signal or store to track. |
+| `options` | `HistoryOptions` | (Optional) Configuration for the history stack. |
+
+#### HistoryOptions
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| `maxDepth` | `number` | (Default: 100) The maximum number of past states to keep in memory. Older states are discarded when this limit is reached. |
+
+### Returns
+
+Returns a `HistoryController<T>` object containing the following reactive properties and methods:
+
+| Property/Method | Type | Description |
+| --------------- | ---- | ----------- |
+| `undo()` | `() => void` | Reverts the target to its previous state. |
+| `redo()` | `() => void` | Advances the target to the next state (if `undo` was previously called). |
+| `canUndo` | `ComputedSignal<boolean>` | A reactive boolean indicating if there is a past state available. |
+| `canRedo` | `ComputedSignal<boolean>` | A reactive boolean indicating if there is a future state available. |
+| `history` | `ComputedSignal<T[]>` | A reactive array containing the entire tracked state stack. |
+| `clear()` | `() => void` | Wipes the history stack and resets `canUndo`/`canRedo` to `false`. |
+
+## Usage
+
+### Basic Undo and Redo
+
+When the target signal is mutated, `createHistory` automatically pushes the new value onto the history stack.
+
+```ts
+import { signal } from 'ripple-reactive';
+import { createHistory } from 'ripple-reactive/history';
+
+const text = signal('');
+const { undo, redo, canUndo } = createHistory(text, { maxDepth: 50 });
+
+text.value = 'Hello';
+text.value = 'Hello World';
+
+console.log(text.value); // 'Hello World'
+
+if (canUndo.value) {
+  undo();
+  console.log(text.value); // 'Hello'
+}
+
+redo();
+console.log(text.value); // 'Hello World'
+```
+
+<Callout type="info">
+  If you call `undo()` and then mutate the signal with a new value, the previous "future" (the redo stack) will be permanently discarded, just like standard text editor behavior.
+</Callout>
+
+### Using with Stores
+
+`createHistory` works perfectly with deeply reactive stores. It internally serializes the state to prevent reference mutations from corrupting the history stack.
+
+```ts
+import { store } from 'ripple-reactive';
+import { createHistory } from 'ripple-reactive/history';
+
+const canvas = store({ shapes: [], selectedId: null });
+const canvasHistory = createHistory(canvas);
+
+// Adding a shape pushes a new entry to the history
+canvas.shapes.push({ id: 1, type: 'circle' });
+
+canvasHistory.undo();
+console.log(canvas.shapes.length); // 0
+```

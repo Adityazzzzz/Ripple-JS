@@ -1,0 +1,80 @@
+---
+title: computed()
+description: Creates a lazy, derived reactive value.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Creates a derived signal that evaluates a compute function and tracks any signals read during its execution. The evaluation is <strong>lazy</strong> (it does not run until read) and <strong>memoized</strong> (it only re-runs if its dependencies have changed).
+
+```ts
+function computed<T>(
+  computeFn: () => T, 
+  options?: ComputedOptions<T>
+): ComputedSignal<T>;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `computeFn` | `() => T` | A pure, synchronous function that returns the derived value. |
+| `options` | `ComputedOptions<T>` | (Optional) Configuration object to customize behavior, such as custom equality checks. |
+
+#### ComputedOptions
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| `equals` | `(prev: T, next: T) => boolean` | Overrides the default strict equality (`===`) check to determine if the new value should trigger downstream effects. |
+
+### Returns
+
+Returns a `ComputedSignal<T>` object (which is strictly read-only) with the following interface:
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| `value` | `T` | A getter property for the current derived value. Attempting to set this property will throw an error. |
+| `peek()` | `() => T` | Reads the current value without creating a reactive subscription to this computed signal. |
+
+## Usage
+
+### Basic Derivation
+
+Computed functions automatically subscribe to any signals they read. If `count` changes, `double` is marked as dirty but won't re-calculate until `.value` is accessed.
+
+```ts
+import { signal, computed } from 'ripple-reactive';
+
+const count = signal(2);
+const double = computed(() => count.value * 2);
+
+console.log(double.value); // 4
+```
+
+### Custom Equality
+
+By default, Ripple.js avoids triggering downstream effects if a computed value evaluates to the exact same result (`===`). For objects or arrays, you can provide a custom `equals` function to prevent unnecessary updates when the internal data hasn't logically changed.
+
+```ts
+import { signal, computed } from 'ripple-reactive';
+
+const userFirst = signal('Aditya');
+const userLast = signal('Singh');
+
+const userProfile = computed(
+  () => ({ 
+    firstName: userFirst.value, 
+    lastName: userLast.value 
+  }),
+  {
+    // Deep comparison to prevent re-renders if the resulting object is identical
+    equals: (prev, next) => 
+      prev.firstName === next.firstName && 
+      prev.lastName === next.lastName
+  }
+);
+```
+
+<Callout type="warn">
+  Compute functions must be pure. Do not mutate other signals or trigger side-effects (like DOM updates or API calls) inside a `computed()` callback. Use `effect()` for side-effects.
+</Callout>

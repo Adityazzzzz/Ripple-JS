@@ -1,0 +1,81 @@
+---
+title: persist()
+description: Synchronizes a signal or store with browser storage.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Automatically binds a reactive signal or store to the browser's `localStorage` or `sessionStorage`. It handles JSON serialization and deserialization seamlessly, ensuring that state survives page reloads and browser sessions.
+
+```ts
+function persist<T>(
+  target: Signal<T> | T, 
+  options: PersistOptions
+): Signal<T> | T;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `target` | `Signal<T>` \| `Store<T>` | The reactive state to synchronize. |
+| `options` | `PersistOptions` | Configuration for the storage binding. |
+
+#### PersistOptions
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| `key` | `string` | Required. The unique key used to save and retrieve the data from the storage provider. |
+| `storage` | `Storage` | (Default: `window.localStorage`) The storage mechanism to use. Can be `localStorage`, `sessionStorage`, or any custom object implementing the Web Storage API. |
+
+### Returns
+
+Returns the original `target` (the signal or store) passed into the function, now permanently bound to the specified storage.
+
+## Usage
+
+### Local Storage Binding
+
+When initialized, `persist` will first check if data exists under the provided key. If it does, it hydrates the signal with the stored value. If it does not, it saves the signal's initial value to storage.
+
+```ts
+import { signal } from 'ripple-reactive';
+import { persist } from 'ripple-reactive/persistence';
+
+// Initializes as 'dark', unless the user previously saved 'light'
+const theme = persist(signal('dark'), {
+  key: 'ui-theme',
+  storage: window.localStorage
+});
+
+// Mutating the signal automatically writes to localStorage
+theme.value = 'light';
+```
+
+### Session Storage with Stores
+
+`persist` works flawlessly with deeply reactive store objects. It debounces storage writes internally to ensure performance isn't degraded during rapid object mutations.
+
+```ts
+import { store } from 'ripple-reactive';
+import { persist } from 'ripple-reactive/persistence';
+
+const cart = persist(
+  store({ 
+    items: [], 
+    discountCode: null 
+  }), 
+  {
+    key: 'checkout-cart',
+    storage: window.sessionStorage
+  }
+);
+
+// Pushing to the array automatically serializes and saves 
+// the entire object to sessionStorage.
+cart.items.push({ id: 101, name: 'Wireless Mouse', price: 45 });
+```
+
+<Callout type="warn">
+  <strong>Data Serialization:</strong> Because `persist` uses `JSON.stringify` and `JSON.parse` under the hood, the target state must be fully JSON-serializable. Functions, Maps, Sets, and circular references will be stripped or throw an error.
+</Callout>
