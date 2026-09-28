@@ -1,0 +1,102 @@
+---
+title: React Adapters
+description: API reference for the Ripple.js React integration hooks.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The `ripple-reactive/react` package exports specialized hooks to bridge Ripple's fine-grained reactivity with React's component lifecycle. These hooks utilize React's native `useSyncExternalStore` internally to ensure concurrent-safe, tear-free rendering.
+
+## `useSignalValue()`
+
+Subscribes a React component to an external Ripple signal or computed value. The component will automatically re-render only when the signal's value changes.
+
+```ts
+function useSignalValue<T>(signal: Signal<T> | ComputedSignal<T>): T;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `signal` | `Signal<T>` \| `ComputedSignal<T>` | The reactive signal to subscribe to. |
+
+### Returns
+
+Returns the current un-wrapped value (`T`) of the signal.
+
+## Usage
+
+```ts
+import { signal } from 'ripple-reactive';
+import { useSignalValue } from 'ripple-reactive/react';
+
+// Created completely outside of React
+const globalTheme = signal('dark');
+
+export function ThemeToggle() {
+  // Binds the component to the global signal
+  const theme = useSignalValue(globalTheme);
+  
+  return (
+    <button onClick={() => globalTheme.value = theme === 'dark' ? 'light' : 'dark'}>
+      Current Theme: {theme}
+    </button>
+  );
+}
+```
+
+## `useSignal()`
+
+Creates a local Ripple signal that persists for the lifetime of the component. It is structurally similar to `useState`, but instead of returning a static value and a setter, it returns a mutable Ripple signal reference.
+
+```ts
+function useSignal<T>(initialValue: T): Signal<T>;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `initialValue` | `T` | The starting value of the local signal. |
+
+### Returns
+
+Returns a `Signal<T>` object. Note that mutating this signal's `.value` does not automatically trigger a re-render unless you also pass it into `useSignalValue`.
+
+## Usage
+
+`useSignal` is incredibly useful when you want to create local reactive state that triggers effects or derived computed values without forcing the React component itself to re-render.
+
+```ts
+import { effect } from 'ripple-reactive';
+import { useSignal, useSignalValue } from 'ripple-reactive/react';
+import { useEffect } from 'react';
+
+export function SearchForm() {
+  // Local reactive state
+  const searchQuery = useSignal('');
+  
+  // This value forces a re-render when read
+  const currentQuery = useSignalValue(searchQuery);
+
+  useEffect(() => {
+    // We can bridge Ripple effects with React's lifecycle
+    const dispose = effect(() => {
+      console.log(`Sending API request for: ${searchQuery.value}`);
+    });
+    return dispose;
+  }, []);
+
+  return (
+    <input 
+      value={currentQuery} 
+      onChange={(e) => searchQuery.value = e.target.value} 
+    />
+  );
+}
+```
+
+<Callout type="info">
+  <strong>When to use `useSignal` vs `useState`:</strong> If the state mutation strictly dictates a UI change, stick to standard `useState`. Use `useSignal` when you need fine-grained control over side-effects, or when passing a mutable state container deeply down the component tree without triggering intermediate renders.
+</Callout>
