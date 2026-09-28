@@ -1,127 +1,99 @@
 ---
-title: Interactive Components
-description: Documenting Ripple.js using Tabs, Steps, and Accordions.
+title: Quick Start & Installation
+description: Get up and running with Ripple.js and learn the core concepts in under 5 minutes.
 ---
 
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { Step, Steps } from 'fumadocs-ui/components/steps';
-import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-## Framework Adapters (Tabs)
+## Installation
 
-The `<Tabs>` component is the best way to show how Ripple.js integrates across different frameworks without cluttering the page.
+Ripple.js is available on npm and works seamlessly in any JavaScript or TypeScript environment.
+
+<Steps>
+
+### Install the core package
+
+```bash
+npm install ripple-reactive
+```
+
+### (Optional) Install a framework adapter
+
+If you are using React, Vue, or Svelte, install the specific adapter alongside the core library.
+
+```bash
+npm install ripple-reactive react
+```
+
+</Steps>
+
+## Core Concepts
+
+Let's build a simple reactive counter using the core primitives.
+
+## Framework Integration
+
+Ripple.js can be dropped into any major UI framework. Here is how to use the official adapters to bind signals directly to your components.
 
 <Tabs items={['React', 'Vue 3', 'Svelte']}>
   <Tab value="React">
-  ```tsx title="React"
+  ```tsx
   import { signal } from 'ripple-reactive';
   import { useSignalValue } from 'ripple-reactive/react';
 
+  // Define state outside the component
   const count = signal(0);
 
   export function Counter() {
+    // Bind the signal to the React component lifecycle
     const value = useSignalValue(count);
-    return <button onClick={() => count.value++}>{value}</button>;
+    
+    return (
+      <button onClick={() => count.value++}>
+        Count: {value}
+      </button>
+    );
   }
-  
-  const count = signal(0);
-  const countRef = toVueRef(count); // Use with v-model
   ```
   </Tab>
+
   <Tab value="Vue 3">
-  ```vue title="Vue 3"
+  ```vue
+  <script setup>
   import { signal } from 'ripple-reactive';
   import { toVueRef } from 'ripple-reactive/vue';
 
   const count = signal(0);
-  const countRef = toVueRef(count); // Use with v-model
+  const countRef = toVueRef(count); // Connects to Vue's reactivity system
+  </script>
+
+  <template>
+    <button @click="count.value++">
+      Count: {{ countRef }}
+    </button>
+  </template>
   ```
   </Tab>
+
   <Tab value="Svelte">
-  ```svelte title="Svelte"
+  ```svelte
   <script>
     import { signal } from 'ripple-reactive';
     import { toSvelteRef } from 'ripple-reactive/svelte';
 
     const count = signal(0);
-    const countRef = toSvelteRef(count); // Use with bind:value
+    const countRef = toSvelteRef(count); // Exposes a Svelte store contract
   </script>
 
-  <input type="number" bind:value={$countRef} />
-  <p>Value: {$countRef}</p>
+  <button on:click={() => count.value++}>
+    Count: {$countRef}
+  </button>
   ```
   </Tab>
 </Tabs>
 
-
-Quick Start Guide (Steps)
-The <Steps> component automatically adds a vertical connector line alongside standard markdown headings (like ###) to create a clean, sequential tutorial.
-
-## Installation (Steps)
-
-<Steps>
-  <Step title="Installation">
-    ```bash
-    npm install ripple-reactive
-    ```
-  </Step>
-  <Step title="Quick Start">
-    ```ts
-    import { signal, computed, effect } from 'ripple-reactive';
-
-    const count = signal(0);
-    const double = computed(() => count.value * 2);
-
-    effect(() => {
-      console.log(`Count: ${count.value}, Double: ${double.value}`);
-    });
-    ```
-  </Step>
-</Steps>
-
-## Frequently Asked Questions (Accordions)
-
-<Accordions>
-  <Accordion title="Installation">
-    ```bash
-    npm install ripple-reactive
-    ```
-  </Accordion>
-  <Accordion title="Quick Start">
-    ```ts
-    import { signal, computed, effect } from 'ripple-reactive';
-
-    const count = signal(0);
-    const double = computed(() => count.value * 2);
-
-    effect(() => {
-      console.log(`Count: ${count.value}, Double: ${double.value}`);
-    });
-    ```
-  </Accordion>
-</Accordions>
-
-## Key things to note:
-<Card>
-The Imports: While Callout and Cards are usually mapped globally, advanced interactive elements like Tabs and Accordions often need to be imported at the top of the MDX file.
-
-The items Prop: The <Tabs> component requires the items array to match the value of each <Tab> exactly so it knows how to generate the buttons.
-
-The Steps Syntax: You do not need to wrap every step in a React component; just wrap the entire section in <Steps> and use standard markdown ### for each new number.
-</Card>
-
-<Card>
-The Imports: While Callout and Cards are usually mapped globally, advanced interactive elements like Tabs and Accordions often need to be imported at the top of the MDX file.
-
-The items Prop: The <Tabs> component requires the items array to match the value of each <Tab> exactly so it knows how to generate the buttons.
-
-The Steps Syntax: You do not need to wrap every step in a React component; just wrap the entire section in <Steps> and use standard markdown ### for each new number.
-</Card>
-
-<Card>
-The Imports: While Callout and Cards are usually mapped globally, advanced interactive elements like Tabs and Accordions often need to be imported at the top of the MDX file.
-
-The items Prop: The <Tabs> component requires the items array to match the value of each <Tab> exactly so it knows how to generate the buttons.
-
-The Steps Syntax: You do not need to wrap every step in a React component; just wrap the entire section in <Steps> and use standard markdown ### for each new number.
-</Card>
+<Callout title="Performance Note" type="info">
+  Ripple.js utilizes a push-pull hybrid engine. Mutations push dirty flags instantly, but computed values are lazy and only evaluate when read. This guarantees glitch-free propagation with zero intermediate stale states.
+</Callout>
