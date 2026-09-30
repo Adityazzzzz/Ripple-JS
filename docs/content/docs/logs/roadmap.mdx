@@ -4,27 +4,18 @@ description: What's coming next for Ripple.js.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
-import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Ripple.js was conceived with a clear vision: bring fine-grained, glitch-free reactive primitives to every JavaScript environment with zero framework lock-in.
 
 Following the initial release of core primitives, collections, stores, and framework adapters, our roadmap outlines upcoming milestones, architectural enhancements, and ecosystem tooling.
 
-<Cards>
-  <Card title="v0.2.0 (Next Minor)" description="Advanced selectors, async computeds, RxJS interop, and DevTools extension." />
-  <Card title="v0.3.0 (Future)" description="SSR hydration, cross-tab channels, store middleware, and worker offloading." />
-  <Card title="v1.0.0 (Stable)" description="API stabilization, migration guides, RSC support, and 100% test coverage." />
-</Cards>
-
----
-
-## v0.2.0 (Next Minor) — Ergonomics & Tooling
+## v0.2.0 (Next Minor)
 
 The v0.2.0 cycle focuses on developer ergonomics, asynchronous reactivity, and visual inspection.
 
-### 1. Fine-Grained `selector()` for Stores
+### Fine-Grained `selector()` for Stores
 
-Borrowing the best ideas from modern state management architectures, `selector()` will enable fine-grained property selection with shallow comparison semantics. This prevents unnecessary re-evaluations when unrelated store slices update.
+Borrowing the best ideas from modern state management, `selector()` will enable fine-grained property selection with shallow comparison. This prevents unnecessary re-evaluations when unrelated store slices update.
 
 ```ts
 // Planned API Preview
@@ -37,13 +28,13 @@ const store = createStore({
   },
 });
 
-// Re-evaluates ONLY when user.name changes, ignoring theme or age updates
+// Re-evaluates ONLY when user.name changes
 const userName = selector(store, (state) => state.user.name);
 ```
 
-### 2. Async Computed Values
+### Async Computed Values
 
-While [`resource()`](/docs/api-reference/resource) covers parameter-driven asynchronous fetching, async computeds will allow `computed()` functions to directly return Promises with built-in suspension tracking and race-condition prevention.
+While `resource()` covers parameter-driven async fetching, async computeds will allow `computed()` to directly return Promises with built-in suspension tracking and race-condition prevention.
 
 ```ts
 // Planned API Preview
@@ -58,9 +49,9 @@ const searchResults = computed(async () => {
 });
 ```
 
-### 3. RxJS Interoperability
+### RxJS Interoperability
 
-First-class bidirectional conversions between Ripple.js signals and RxJS Observables (`toObservable()` and `fromObservable()`). This allows complex stream operators (such as `debounceTime`, `switchMap`, or `bufferCount`) to pipe effortlessly into reactive signals.
+First-class bidirectional conversions between Ripple.js signals and RxJS Observables. `toObservable()` and `fromObservable()` allow complex stream operators to pipe into reactive signals.
 
 ```ts
 // Planned API Preview
@@ -78,27 +69,26 @@ const evenDoubles$ = count$.pipe(
 const evenDoubleSignal = fromObservable(evenDoubles$, 0);
 ```
 
-### 4. DevTools Browser Extension
+### DevTools Browser Extension
 
-A dedicated Chrome and Firefox extension paired with a standalone web inspector. Features include:
-* **Reactive Dependency Graph Visualization:** View upstream dependencies and downstream subscribers in real time.
-* **Dirty Notification Inspector:** Watch update propagation waves traverse the graph.
-* **Timeline & State History:** Time-travel through signal mutations and undo/redo operations.
+A dedicated Chrome and Firefox extension paired with a standalone web inspector:
 
----
+- Reactive Dependency Graph Visualization — view upstream and downstream nodes in real time
+- Dirty Notification Inspector — watch update propagation waves traverse the graph
+- Timeline and State History — time-travel through signal mutations and undo/redo operations
 
-## v0.3.0 (Future) — Distributed & High-Performance Reactivity
+## v0.3.0 (Future)
 
 The v0.3.0 release targets multi-threaded execution, distributed runtime environments, and enterprise store extensions.
 
-### 1. Server-Side Rendering (SSR) & Hydration
+### Server-Side Rendering (SSR) and Hydration
 
-* Isolated, request-scoped signal graph instances to prevent cross-request memory leaks in Node.js and Bun servers.
-* Safe client hydration: serialize initial signal snapshots from the server and hydrate reactive graphs on the client without duplicate effect triggers.
+- Isolated, request-scoped signal graph instances to prevent cross-request memory leaks in Node.js and Bun servers.
+- Safe client hydration: serialize initial signal snapshots from the server and hydrate reactive graphs on the client without duplicate effect triggers.
 
-### 2. Cross-Context `channel()`
+### Cross-Context `channel()`
 
-A reactive pub/sub primitive backed by the browser `BroadcastChannel` API and Web Workers. Changes to a channel signal automatically propagate across browser tabs, windows, and workers with zero boilerplate.
+A reactive pub/sub primitive backed by the browser `BroadcastChannel` API and Web Workers. Changes to a channel signal automatically propagate across browser tabs, windows, and workers.
 
 ```ts
 // Planned API Preview
@@ -108,48 +98,46 @@ import { channel } from 'ripple-reactive';
 const activeSession = channel('user-session', { activeTabId: 'main' });
 ```
 
-### 3. Middleware System for Stores
+### Middleware System for Stores
 
 Extensible middleware hooks for `createStore()`, unlocking community plugins:
-* **Logging & Telemetry:** Action time tracking, state diffing, and crash reporting.
-* **Schema Validation:** Enforce schemas at runtime using Zod or Valibot on every state transition.
-* **Storage Sync:** Universal sync with IndexedDB, Web Storage, or remote backends.
 
-### 4. Web Worker Offloading for Heavy Computeds
+- Logging and Telemetry — action time tracking, state diffing, and crash reporting
+- Schema Validation — enforce schemas at runtime using Zod or Valibot on every state transition
+- Storage Sync — universal sync with IndexedDB, Web Storage, or remote backends
 
-Automatic offloading of CPU-intensive computed calculations to background Web Workers using transferable objects (`ArrayBuffer`, `ImageBitmap`), keeping main UI threads stutter-free at 60+ FPS.
+### Web Worker Offloading for Heavy Computeds
 
----
+Automatic offloading of CPU-intensive computed calculations to background Web Workers using transferable objects, keeping main UI threads stutter-free at 60+ FPS.
 
-## v1.0.0 (Stable) — Production Enterprise Grade
+## v1.0.0 (Stable)
 
 The v1.0.0 milestone marks production maturity, ironclad stability, and enterprise readiness.
 
-### 1. API Stabilization & SemVer Guarantee
+### API Stabilization and SemVer Guarantee
 
-* Final freeze on core primitive interfaces (`signal`, `computed`, `effect`, `batch`).
-* Strict semantic versioning adherence: zero breaking changes within major versions.
+- Final freeze on core primitive interfaces (`signal`, `computed`, `effect`, `batch`).
+- Strict semantic versioning adherence: zero breaking changes within major versions.
 
-### 2. Comprehensive Framework Migration Guides
+### Comprehensive Framework Migration Guides
 
 Detailed guides, comparison tables, and automated migration codemods for teams migrating from:
-* `@preact/signals`
-* `@vue/reactivity`
-* `solid-js`
 
-### 3. Official React Server Components (RSC) Support
+- `@preact/signals`
+- `@vue/reactivity`
+- `solid-js`
+
+### Official React Server Components (RSC) Support
 
 Seamless compatibility with modern React architectures, including Next.js App Router and streaming SSR components.
 
-### 4. 100% Test Coverage & Fuzz Testing
+### 100% Test Coverage and Fuzz Testing
 
-* Comprehensive test suite reaching 100% branch and statement coverage.
-* Automated stress-testing of cyclic graph detection, intrusive linked-list memory pooling, and garbage-collection pressure.
-
----
+- Comprehensive test suite reaching 100% branch and statement coverage.
+- Automated stress-testing of cyclic graph detection, intrusive linked-list memory pooling, and garbage-collection pressure.
 
 ## Get Involved
 
 <Callout type="info">
-  **We value your input!** Ripple.js is community-driven. If you have feedback on proposed APIs, feature requests, or would like to contribute an RFC, join the discussion on [GitHub](https://github.com/Adityazzzzz/Ripple-JS).
+  We value your input! Ripple.js is community-driven. If you have feedback on proposed APIs, feature requests, or would like to contribute an RFC, join the discussion on [GitHub](https://github.com/Adityazzzzz/Ripple-JS).
 </Callout>

@@ -5,7 +5,6 @@ description: Manage reactivity memory and cleanup with effectScope, createScope,
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-# Scopes & Lifecycle
 
 When building complex applications, it's crucial to manage the lifecycle of your reactive effects and computeds to prevent memory leaks. Ripple provides robust scoping mechanisms to automatically clean up reactivity when it's no longer needed.
 
@@ -22,16 +21,16 @@ const scope = createScope();
 scope.run(() => {
   // This effect is owned by the scope
   effect(() => {
-    console.log('Count is now:', count());
+    console.log('Count is now:', count.value);
   });
 });
 
-count(1); // logs: "Count is now: 1"
+count.value = 1; // logs: "Count is now: 1"
 
 // Clean up everything inside the scope
 scope.dispose();
 
-count(2); // No log, the effect was disposed
+count.value = 2; // No log, the effect was disposed
 ```
 
 ## `onDispose()`
@@ -70,7 +69,7 @@ import { effectScope, signal, effect } from 'ripple-reactive';
 const name = signal('Alice');
 
 const scope = effectScope(() => {
-  effect(() => console.log(`Hello, ${name()}!`));
+  effect(() => console.log(`Hello, ${name.value}!`));
 });
 
 scope.dispose(); // Cleans up the effect
@@ -111,7 +110,7 @@ function createGameLoop(fps: number) {
   
   const scope = effectScope(() => {
     const interval = setInterval(() => {
-      time(time() + 1000 / fps);
+      time.value = time.value + 1000 / fps;
     }, 1000 / fps);
 
     onDispose(() => {

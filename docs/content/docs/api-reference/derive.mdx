@@ -29,7 +29,6 @@ Returns an object with the same keys, where each value is a `ReadonlySignal` rep
 | `[key].value` | `ReturnType<T[K]>` | The evaluated result of the derivation function. |
 | `[key].peek()` | `() => ReturnType<T[K]>` | Reads the current computed value without creating a reactive subscription. |
 
----
 
 ## Usage
 
@@ -110,7 +109,6 @@ console.log(`Subtotal: $${subtotal.value}`);       // $170
 console.log(`Free Shipping: ${qualifiesForFreeShipping.value}`); // true
 ```
 
----
 
 ## Comparison: `derive()` vs Manual `computed()`
 
@@ -145,7 +143,6 @@ const isEven = computed(() => count.value % 2 === 0);
   </Tab>
 </Tabs>
 
----
 
 ## Independent Evaluation & Memoization
 

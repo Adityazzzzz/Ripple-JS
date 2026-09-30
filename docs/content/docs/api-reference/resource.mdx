@@ -1,11 +1,9 @@
 ---
 title: resource()
-description: Reactive asynchronous data fetching
+description: Reactive asynchronous data fetching.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
-
-# `resource()`
 
 `resource()` provides a clean way to handle reactive asynchronous data loading. It automatically tracks a source signal, runs a fetcher function when the source changes, and exposes reactive `data`, `loading`, and `error` states.
 
@@ -19,7 +17,7 @@ import { signal, resource, effect } from 'ripple-reactive';
 const userId = signal(1);
 
 const userResource = resource(
-  () => userId(),
+  () => userId.value,
   async (id) => {
     const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
     if (!res.ok) throw new Error('Failed to fetch user');
@@ -28,17 +26,17 @@ const userResource = resource(
 );
 
 effect(() => {
-  if (userResource.loading()) {
+  if (userResource.loading.value) {
     console.log('Loading user...');
-  } else if (userResource.error()) {
-    console.error('Error:', userResource.error()?.message);
+  } else if (userResource.error.value) {
+    console.error('Error:', userResource.error.value.message);
   } else {
-    console.log('User loaded:', userResource.data()?.name);
+    console.log('User loaded:', userResource.data.value?.name);
   }
 });
 
 // Changing the source signal automatically triggers a refetch
-userId(2);
+userId.value = 2;
 ```
 
 ## Providing Initial Value
@@ -47,12 +45,12 @@ You can provide an `initialValue` to avoid showing a loading state if you alread
 
 ```ts
 const userResource = resource(
-  () => userId(),
+  () => userId.value,
   fetchUser,
   { initialValue: { name: 'Local User' } }
 );
 
-console.log(userResource.data().name); // 'Local User'
+console.log(userResource.data.value.name); // 'Local User'
 ```
 
 ## Manual Refetching
@@ -65,7 +63,7 @@ import { signal, resource } from 'ripple-reactive';
 const currentFolder = signal('inbox');
 
 const emails = resource(
-  () => currentFolder(),
+  () => currentFolder.value,
   async (folder) => fetchEmails(folder)
 );
 
@@ -84,10 +82,10 @@ import { signal, resource, debouncedSignal } from 'ripple-reactive';
 
 const searchInput = signal('');
 // Only update the actual query after 300ms of no typing
-const debouncedQuery = debouncedSignal(searchInput, 300);
+const debouncedQuery = debouncedSignal(searchInput.value, 300);
 
 const searchResults = resource(
-  () => debouncedQuery(),
+  () => debouncedQuery.value,
   async (query) => {
     if (!query) return [];
     const res = await fetch(`/api/search?q=${query}`);

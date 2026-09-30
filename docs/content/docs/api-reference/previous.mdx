@@ -24,7 +24,6 @@ function previous<T>(
 
 Returns a `ReadonlySignal<T | undefined>` that holds the value before the latest change. On initial setup, its value is `undefined` (or the initial value once initialized).
 
----
 
 ## Usage
 
@@ -43,10 +42,10 @@ effect(() => {
 });
 
 route.value = '/about';
-// → "Navigated from /home to /about"
+// â†’ "Navigated from /home to /about"
 
 route.value = '/dashboard';
-// → "Navigated from /about to /dashboard"
+// â†’ "Navigated from /about to /dashboard"
 ```
 
 ### Numerical Trends and Deltas
@@ -112,7 +111,6 @@ activeStep.value = 1;
 console.log(slideDirection.value); // 'backward'
 ```
 
----
 
 ## Comparison: `previous()` vs `watch()`
 

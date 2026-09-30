@@ -10,7 +10,6 @@ When building reusable utilities, custom hooks, or component adapters, functions
 
 All type guards perform runtime validation using **unique Symbol branding** rather than `instanceof` checks, guaranteeing reliability across `iframe` boundaries, Web Workers, and diverse bundling environments.
 
----
 
 ## Type Guard Overview
 
@@ -53,7 +52,6 @@ isReactive({ value: 42 }); // false
 | Primitive (`42`, `'foo'`, `null`) | `false` | `false` | `false` |
 | Plain object (`{ value: 10 }`) | `false` | `false` | `false` |
 
----
 
 ## isSignal()
 
@@ -87,7 +85,6 @@ resetIfSignal(score);
 console.log(score.value); // 0
 ```
 
----
 
 ## isComputed()
 
@@ -117,11 +114,10 @@ console.log(isComputed(square)); // true
 console.log(isComputed(count));  // false
 ```
 
----
 
 ## isReactive()
 
-Checks whether a given value is **any** reactive primitive—either a writable `Signal<T>` or a read-only `ReadonlySignal<T>`.
+Checks whether a given value is **any** reactive primitiveâ€”either a writable `Signal<T>` or a read-only `ReadonlySignal<T>`.
 
 ```ts
 function isReactive<T = unknown>(
@@ -139,7 +135,6 @@ function isReactive<T = unknown>(
 
 Returns `true` if `isSignal(value)` or `isComputed(value)` evaluates to `true`.
 
----
 
 ## Why Symbol Branding?
 
@@ -165,7 +160,6 @@ export function isSignal<T = unknown>(value: unknown): value is Signal<T> {
   Because branding relies on symbols, ordinary objects shaped like `{ value: 42 }` will never accidentally register as reactive.
 </Callout>
 
----
 
 ## Practical Example: Polymorphic Utilities
 

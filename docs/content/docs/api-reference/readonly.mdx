@@ -6,7 +6,7 @@ description: Creates a read-only view of a signal.
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
-When designing services, stores, or shared modules, you frequently want to expose state to outside consumers so they can react to changes—without allowing them to directly mutate that state.
+When designing services, stores, or shared modules, you frequently want to expose state to outside consumers so they can react to changesâ€”without allowing them to directly mutate that state.
 
 `readonly()` wraps an existing writable signal or computed value into a `ReadonlySignal<T>`. Reading `.value` establishes full reactive dependency tracking, but attempts to reassign `.value` are blocked at both compile time and runtime.
 
@@ -31,7 +31,6 @@ Returns a `ReadonlySignal<T>` with the following interface:
 | `value` | `T` | A read-only getter property for the current value. Subscribes calling effects or computed signals. |
 | `peek()` | `() => T` | Reads the current value without establishing a reactive subscription. |
 
----
 
 ## Basic Usage
 
@@ -41,20 +40,19 @@ import { signal, readonly, effect } from 'ripple-reactive';
 const _count = signal(0);
 export const count = readonly(_count); // Expose read-only view
 
-// ✅ Reading the value works and subscribes calling effects
+// âœ… Reading the value works and subscribes calling effects
 effect(() => {
   console.log(`Current count: ${count.value}`);
 });
 
-// ✅ Updating the underlying signal triggers subscribers
+// âœ… Updating the underlying signal triggers subscribers
 _count.value = 1; // Logs: "Current count: 1"
 
-// ❌ TypeScript Error: Cannot assign to 'value' because it is a read-only property
+// âŒ TypeScript Error: Cannot assign to 'value' because it is a read-only property
 // @ts-expect-error
 count.value = 5;
 ```
 
----
 
 ## How It Works
 
@@ -72,7 +70,6 @@ console.log(isSignal(view));   // false
 console.log(isComputed(view)); // true
 ```
 
----
 
 ## The Module API Design Pattern
 
@@ -136,10 +133,9 @@ effect(() => {
 login({ id: 'u_101', name: 'Alice', role: 'admin' }, 'jwt_token_xyz');
 
 // Attempting to mutate directly will fail:
-// user.value = null; // ❌ TS Error! Cannot assign to 'value'
+// user.value = null; // âŒ TS Error! Cannot assign to 'value'
 ```
 
----
 
 ## Nuances & Best Practices
 
@@ -150,8 +146,8 @@ login({ id: 'u_101', name: 'Alice', role: 'admin' }, 'jwt_token_xyz');
   const list = signal(['apple', 'banana']);
   const readOnlyList = readonly(list);
 
-  // readOnlyList.value = []; // ❌ Blocked
-  // readOnlyList.value.push('cherry'); // ⚠️ Mutates internal array reference!
+  // readOnlyList.value = []; // âŒ Blocked
+  // readOnlyList.value.push('cherry'); // âš ï¸ Mutates internal array reference!
   ```
 
   For object or collection state, prefer immutable update patterns or use [`reactiveArray()`](/docs/api-reference/collections) / [`createStore()`](/docs/api-reference/store).

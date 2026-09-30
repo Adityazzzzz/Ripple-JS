@@ -9,10 +9,9 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 Reactive applications often perform side-effects, I/O operations, and asynchronous requests. An unhandled exception inside a reactive effect could silently halt updates or bubble up to crash the entire application.
 
 Ripple.js provides two dedicated error-handling primitives:
-* **`catchError()`** — An error boundary for reactive effects that catches exceptions and prevents crashing while keeping subscriptions active.
-* **`fromPromise()`** — Converts asynchronous Promises into reactive signals that track loading states, errors, and resolved values.
+* **`catchError()`** â€” An error boundary for reactive effects that catches exceptions and prevents crashing while keeping subscriptions active.
+* **`fromPromise()`** â€” Converts asynchronous Promises into reactive signals that track loading states, errors, and resolved values.
 
----
 
 ## catchError()
 
@@ -112,7 +111,6 @@ const stop = catchError(
 );
 ```
 
----
 
 ## fromPromise()
 

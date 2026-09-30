@@ -18,7 +18,6 @@ function debouncedSignal<T>(initialValue: T, delay: number): Signal<T>;
 function throttledEffect(fn: () => void, interval: number): EffectHandle;
 ```
 
----
 
 ## `debouncedEffect()`
 
@@ -73,7 +72,6 @@ query.value = 'ripple';
 stopSearch();
 ```
 
----
 
 ## `debouncedSignal()`
 
@@ -127,7 +125,6 @@ username.value = 'aditya';
 // The debounced effect fires exactly once 500ms later with "aditya"
 ```
 
----
 
 ## `throttledEffect()`
 
@@ -170,7 +167,6 @@ const stopScrollObserver = throttledEffect(() => {
 stopScrollObserver();
 ```
 
----
 
 ## Choosing the Right Strategy
 
