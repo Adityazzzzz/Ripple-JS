@@ -1,0 +1,143 @@
+---
+title: Scopes & Lifecycle
+description: Manage reactivity memory and cleanup with effectScope, createScope, and onDispose
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Scopes & Lifecycle
+
+When building complex applications, it's crucial to manage the lifecycle of your reactive effects and computeds to prevent memory leaks. Ripple provides robust scoping mechanisms to automatically clean up reactivity when it's no longer needed.
+
+## `createScope()`
+
+`createScope()` creates a new reactivity scope. Any effects or computeds created inside its `.run()` method are "owned" by this scope. When the scope is disposed, all owned reactivity is cleaned up.
+
+```ts
+import { createScope, effect, signal } from 'ripple-reactive';
+
+const count = signal(0);
+const scope = createScope();
+
+scope.run(() => {
+  // This effect is owned by the scope
+  effect(() => {
+    console.log('Count is now:', count());
+  });
+});
+
+count(1); // logs: "Count is now: 1"
+
+// Clean up everything inside the scope
+scope.dispose();
+
+count(2); // No log, the effect was disposed
+```
+
+## `onDispose()`
+
+`onDispose()` registers a custom cleanup callback on the currently active scope. It must be called synchronously inside a `scope.run()` or `effectScope()`.
+
+```ts
+import { effectScope, onDispose, signal } from 'ripple-reactive';
+
+effectScope(() => {
+  const ws = new WebSocket('wss://example.com');
+  
+  ws.onmessage = (msg) => {
+    console.log('Message:', msg.data);
+  };
+
+  // Automatically close the connection when the scope is disposed
+  onDispose(() => {
+    ws.close();
+    console.log('WebSocket connection closed.');
+  });
+});
+```
+
+<Callout type="warn">
+  `onDispose()` must be called synchronously during the execution of the scope's run function. It will not work if called inside an asynchronous callback.
+</Callout>
+
+## `effectScope()`
+
+`effectScope(fn)` is a convenient shorthand. It creates a scope, runs the provided function inside it, and returns the newly created scope.
+
+```ts
+import { effectScope, signal, effect } from 'ripple-reactive';
+
+const name = signal('Alice');
+
+const scope = effectScope(() => {
+  effect(() => console.log(`Hello, ${name()}!`));
+});
+
+scope.dispose(); // Cleans up the effect
+```
+
+## Nested Scopes
+
+Scopes can be nested. If a scope is created inside another scope's `.run()`, the child scope automatically registers with the parent. Calling `.dispose()` on the parent will recursively dispose of all child scopes.
+
+```ts
+import { effectScope, onDispose } from 'ripple-reactive';
+
+const parentScope = effectScope(() => {
+  onDispose(() => console.log('Parent disposed'));
+
+  effectScope(() => {
+    onDispose(() => console.log('Child disposed'));
+  });
+});
+
+// Logs both:
+// "Child disposed"
+// "Parent disposed"
+parentScope.dispose();
+```
+
+## Why this matters
+
+In UI frameworks (like React, Vue, or Svelte), components mount and unmount over time. If you create global effects or subscribe to external data sources without cleaning them up on unmount, your application will leak memory and run redundant logic.
+
+### Real-world Example: Game Loop
+
+```ts
+import { effectScope, onDispose, signal } from 'ripple-reactive';
+
+function createGameLoop(fps: number) {
+  const time = signal(0);
+  
+  const scope = effectScope(() => {
+    const interval = setInterval(() => {
+      time(time() + 1000 / fps);
+    }, 1000 / fps);
+
+    onDispose(() => {
+      clearInterval(interval);
+    });
+  });
+
+  return { time, stop: () => scope.dispose() };
+}
+
+const { time, stop } = createGameLoop(60);
+
+// Later, when the game is paused or the component unmounts:
+stop();
+```
+
+## Signatures
+
+```ts
+interface Scope {
+  run<T>(fn: () => T): T;
+  dispose(): void;
+  readonly disposed: boolean;
+}
+
+function createScope(): Scope;
+function onDispose(fn: () => void): void;
+function effectScope(fn: () => void): Scope;
+```
