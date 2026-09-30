@@ -36,6 +36,8 @@ import type { ReadonlySignal } from '../core/types.js';
 export interface PromiseSignal<T> {
   /** The resolved data (undefined until resolved) */
   readonly data: ReadonlySignal<T | undefined>;
+  /** Alias for data */
+  readonly value: ReadonlySignal<T | undefined>;
   /** Whether the promise is still pending */
   readonly loading: ReadonlySignal<boolean>;
   /** The rejection error (undefined if no error) */
@@ -57,8 +59,11 @@ export function fromPromise<T>(promise: Promise<T>): PromiseSignal<T> {
       _loading.value = false;
     });
 
+  const resolvedData = computed(() => _data.value);
+
   return {
-    data: computed(() => _data.value),
+    data: resolvedData,
+    value: resolvedData,
     loading: computed(() => _loading.value),
     error: computed(() => _error.value),
   };
