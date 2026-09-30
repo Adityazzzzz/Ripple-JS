@@ -1,0 +1,148 @@
+---
+title: subscribe()
+description: Simple value change listener. Like a stripped-down watch for when you just need a callback.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+Subscribes a listener callback to value changes on a specific signal or computed value. It runs immediately upon creation with the current value, and re-executes whenever the value changes.
+
+```ts
+function subscribe<T>(
+  source: Signal<T> | ReadonlySignal<T>,
+  callback: (value: T) => void
+): () => void;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `source` | `Signal<T> \| ReadonlySignal<T>` | The signal or computed value to listen to. |
+| `callback` | `(value: T) => void` | Invoked immediately with the current value and whenever the value changes. |
+
+### Returns
+
+Returns an unsubscribe function (`() => void`). Calling this function cancels the subscription and stops further callback invocations.
+
+---
+
+## Usage
+
+### Basic Subscription
+
+`subscribe()` is ideal when you want to bridge a reactive signal to an external service or logging mechanism:
+
+```ts
+import { signal, subscribe } from 'ripple-reactive';
+
+// Mock analytics tracker
+const analytics = {
+  track: (event: string, data: Record<string, unknown>) => {
+    console.log(`[Analytics] ${event}`, data);
+  },
+};
+
+const count = signal(0);
+
+// Subscribes immediately (logs: { value: 0 })
+const unsubscribe = subscribe(count, (value) => {
+  analytics.track('count_changed', { value });
+});
+
+count.value = 5; // Analytics fires: { value: 5 }
+count.value = 10; // Analytics fires: { value: 10 }
+
+unsubscribe(); // Stop listening
+
+count.value = 15; // No analytics event fired
+```
+
+### Bridging to Non-Reactive External APIs
+
+A common real-world use case is synchronizing reactive state with external browser APIs like `localStorage`, `document.title`, or WebSockets:
+
+```ts
+import { signal, subscribe } from 'ripple-reactive';
+
+const activeTheme = signal<'light' | 'dark'>('dark');
+
+// Synchronize root HTML class whenever the theme signal updates
+const unbindTheme = subscribe(activeTheme, (theme) => {
+  document.documentElement.classList.remove('light', 'dark');
+  document.documentElement.classList.add(theme);
+  localStorage.setItem('app-theme', theme);
+});
+
+// Switch themes
+activeTheme.value = 'light';
+
+// Clean up when no longer needed (e.g. during page unload or module teardown)
+unbindTheme();
+```
+
+---
+
+## When to Use: `subscribe()` vs `watch()` vs `effect()`
+
+Ripple.js provides three distinct ways to react to state changes. Choosing the right one depends on whether you are tracking a single signal, explicit multiple sources, or general reactive expressions:
+
+| Feature | `subscribe()` | `watch()` | `effect()` |
+| :--- | :--- | :--- | :--- |
+| **Source Target** | Single `Signal<T>` or `ReadonlySignal<T>` | Explicit getter function `() => T` | Implicit (all signals read inside) |
+| **Callback Arguments** | `(value: T)` | `(newValue: T, oldValue: T \| undefined)` | `(onCleanup)` |
+| **Initial Run** | Immediate (synchronous) | Lazy by default (immediate with `{ immediate: true }`) | Immediate (synchronous) |
+| **Callback Tracking** | Untracked (only subscribes to `source`) | Untracked (only subscribes to `source`) | Auto-tracks every signal accessed |
+| **Primary Use Case** | External callbacks, analytics, simple 1:1 listeners | Old/new comparisons, conditional side-effects, lazy watchers | State synchronization, DOM updates, multi-dependency flows |
+
+<Tabs items={['subscribe()', 'watch()', 'effect()']}>
+  <Tab value="subscribe()">
+```ts
+import { signal, subscribe } from 'ripple-reactive';
+
+const user = signal('Alice');
+
+// Simple 1-to-1 callback with current value
+const unsub = subscribe(user, (name) => {
+  console.log(`User is now: ${name}`);
+});
+```
+  </Tab>
+  <Tab value="watch()">
+```ts
+import { signal, watch } from 'ripple-reactive';
+
+const user = signal('Alice');
+
+// Provides previous & next values; lazy by default
+const stopWatch = watch(
+  () => user.value,
+  (next, prev) => {
+    console.log(`User transitioned from ${prev} to ${next}`);
+  }
+);
+```
+  </Tab>
+  <Tab value="effect()">
+```ts
+import { signal, effect } from 'ripple-reactive';
+
+const firstName = signal('Alice');
+const lastName = signal('Smith');
+
+// Automatically tracks both firstName and lastName
+const stopEffect = effect(() => {
+  console.log(`Full name: ${firstName.value} ${lastName.value}`);
+});
+```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+  **Immediate Execution:** `subscribe()` runs its callback immediately upon creation with the current value. If you need lazy observation that only executes on *future* changes, use [`watch()`](/docs/api-reference/watch) instead.
+</Callout>
+
+<Callout type="warn">
+  Always retain the returned unsubscribe function and call it when the listener is no longer required (such as when tearing down components or web workers) to prevent memory leaks.
+</Callout>
