@@ -15,13 +15,27 @@ Ripple.js is available on npm and works seamlessly in any JavaScript or TypeScri
 
 ### Install the core package
 
-```bash
-npm install ripple-reactive
-```
+<Tabs items={['npm', 'yarn', 'pnpm']}>
+  <Tab value="npm">
+  ```bash
+  npm install ripple-reactive
+  ```
+  </Tab>
+  <Tab value="yarn">
+  ```bash
+  yarn add ripple-reactive
+  ```
+  </Tab>
+  <Tab value="pnpm">
+  ```bash
+  pnpm add ripple-reactive
+  ```
+  </Tab>
+</Tabs>
 
 ### (Optional) Install a framework adapter
 
-If you are using React, Vue, or Svelte, install the specific adapter alongside the core library.
+If you are using React, Vue, or Svelte, install the framework alongside the core library.
 
 ```bash
 npm install ripple-reactive react
@@ -31,7 +45,32 @@ npm install ripple-reactive react
 
 ## Core Concepts
 
-Let's build a simple reactive counter using the core primitives.
+Ripple.js has three building blocks: **Signals** (state), **Computed** (derived values), and **Effects** (side effects). Here's how they work together:
+
+```ts
+import { signal, computed, effect } from 'ripple-reactive';
+
+// 1. Signal — holds reactive state
+const price = signal(29.99);
+const quantity = signal(2);
+
+// 2. Computed — derives a value (lazy + memoized)
+const total = computed(() => price.value * quantity.value);
+const withTax = computed(() => total.value * 1.18); // 18% GST
+
+// 3. Effect — reacts to changes automatically
+effect(() => {
+  console.log(`Total: ₹${total.value.toFixed(2)}, With Tax: ₹${withTax.value.toFixed(2)}`);
+});
+// → "Total: ₹59.98, With Tax: ₹70.78"
+
+quantity.value = 5;
+// → "Total: ₹149.95, With Tax: ₹176.94"  ✨ automatic!
+```
+
+<Callout type="info">
+  That's it — three primitives. Signals hold values, computed derives from them lazily, and effects react to changes. Everything else in Ripple.js builds on top of these.
+</Callout>
 
 ## Framework Integration
 
@@ -81,14 +120,14 @@ Ripple.js can be dropped into any major UI framework. Here is how to use the off
   ```svelte
   <script>
     import { signal } from 'ripple-reactive';
-    import { toSvelteRef } from 'ripple-reactive/svelte';
+    import { toStore } from 'ripple-reactive/svelte';
 
     const count = signal(0);
-    const countRef = toSvelteRef(count); // Exposes a Svelte store contract
+    const count$ = toStore(count); // Exposes a Svelte store contract
   </script>
 
   <button on:click={() => count.value++}>
-    Count: {$countRef}
+    Count: {$count$}
   </button>
   ```
   </Tab>
