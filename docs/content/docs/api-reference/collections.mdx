@@ -1,0 +1,127 @@
+---
+title: Reactive Collections
+description: Deeply reactive Map and Array structures
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Reactive Collections
+
+While signals are great for primitives and replacing entire object references, managing granular updates within collections (like Arrays and Maps) can be cumbersome if you have to copy the entire structure every time an item changes. 
+
+Ripple provides `reactiveMap()` and `reactiveArray()` to solve this.
+
+## `reactiveMap()`
+
+A reactive wrapper around the native `Map` object. Mutations (`set`, `delete`, `clear`) automatically trigger any effects that are reading from the map (`get`, `has`, `size`, or iterating).
+
+```ts
+import { reactiveMap, effect } from 'ripple-reactive';
+
+const cache = reactiveMap<string, any>();
+
+effect(() => {
+  console.log(`Cache size is ${cache.size}`);
+  if (cache.has('user')) {
+    console.log('User cache:', cache.get('user'));
+  }
+});
+// Logs: "Cache size is 0"
+
+cache.set('user', { name: 'Alice' });
+// Logs:
+// "Cache size is 1"
+// "User cache: { name: 'Alice' }"
+
+cache.delete('user');
+// Logs: "Cache size is 0"
+```
+
+## `reactiveArray()`
+
+A reactive wrapper around native Arrays. Methods that mutate the array (`push`, `pop`, `splice`, `sort`, etc.) automatically trigger effects that read the array's length or iterate over its items.
+
+```ts
+import { reactiveArray, effect } from 'ripple-reactive';
+
+const todos = reactiveArray([{ text: 'Learn Ripple', done: false }]);
+
+effect(() => {
+  console.log(`You have ${todos.length} tasks.`);
+  const pending = todos.filter(t => !t.done);
+  console.log(`${pending.length} pending tasks.`);
+});
+
+// Pushing a new item triggers the effect
+todos.push({ text: 'Write docs', done: false });
+
+// Splice works reactively too
+todos.splice(0, 1);
+```
+
+### Accessing the raw array
+
+To get the underlying array reference (for passing to non-reactive libraries or native APIs), use the `.items` property.
+
+```ts
+const list = reactiveArray([1, 2, 3]);
+console.log(list.items); // [1, 2, 3]
+```
+
+## When to use Collections vs Signals
+
+<Callout type="info">
+  **Rule of Thumb:**
+  If you frequently update *individual items* in a large list, use `reactiveArray()` or `reactiveMap()`. 
+  If you always replace the *entire list* at once (e.g., fetching a fresh list from an API), a simple `signal([])` is more efficient.
+</Callout>
+
+**Use Signals:**
+```ts
+const userList = signal([]);
+// Replacing the entire array
+userList(await fetchUsers());
+```
+
+**Use Reactive Collections:**
+```ts
+const activeConnections = reactiveMap();
+// Frequent granular updates
+ws.on('connect', (socket) => activeConnections.set(socket.id, socket));
+ws.on('disconnect', (socket) => activeConnections.delete(socket.id));
+```
+
+## Signatures
+
+```ts
+interface ReactiveMap<K, V> {
+  get(key: K): V | undefined;
+  set(key: K, value: V): void;
+  has(key: K): boolean;
+  delete(key: K): boolean;
+  clear(): void;
+  readonly size: number;
+  forEach(cb: (value: V, key: K, map: Map<K, V>) => void): void;
+  keys(): IterableIterator<K>;
+  values(): IterableIterator<V>;
+  entries(): IterableIterator<[K, V]>;
+}
+
+interface ReactiveArray<T> {
+  readonly items: T[];
+  readonly length: number;
+  push(...items: T[]): void;
+  pop(): T | undefined;
+  splice(start: number, deleteCount?: number, ...items: T[]): T[];
+  indexOf(item: T): number;
+  forEach(cb: (value: T, index: number, array: T[]) => void): void;
+  map<U>(cb: (value: T, index: number, array: T[]) => U): U[];
+  filter(cb: (value: T, index: number, array: T[]) => boolean): T[];
+  find(cb: (value: T, index: number, array: T[]) => boolean): T | undefined;
+  sort(compareFn?: (a: T, b: T) => number): void;
+  clear(): void;
+}
+
+function reactiveMap<K, V>(initial?: Iterable<[K, V]>): ReactiveMap<K, V>;
+function reactiveArray<T>(initial?: T[]): ReactiveArray<T>;
+```
