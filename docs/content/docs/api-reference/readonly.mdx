@@ -1,0 +1,162 @@
+---
+title: readonly()
+description: Creates a read-only view of a signal.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+When designing services, stores, or shared modules, you frequently want to expose state to outside consumers so they can react to changes—without allowing them to directly mutate that state.
+
+`readonly()` wraps an existing writable signal or computed value into a `ReadonlySignal<T>`. Reading `.value` establishes full reactive dependency tracking, but attempts to reassign `.value` are blocked at both compile time and runtime.
+
+```ts
+function readonly<T>(
+  source: Signal<T> | ReadonlySignal<T>
+): ReadonlySignal<T>;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `source` | `Signal<T> \| ReadonlySignal<T>` | The source reactive signal to wrap. |
+
+### Returns
+
+Returns a `ReadonlySignal<T>` with the following interface:
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| `value` | `T` | A read-only getter property for the current value. Subscribes calling effects or computed signals. |
+| `peek()` | `() => T` | Reads the current value without establishing a reactive subscription. |
+
+---
+
+## Basic Usage
+
+```ts
+import { signal, readonly, effect } from 'ripple-reactive';
+
+const _count = signal(0);
+export const count = readonly(_count); // Expose read-only view
+
+// ✅ Reading the value works and subscribes calling effects
+effect(() => {
+  console.log(`Current count: ${count.value}`);
+});
+
+// ✅ Updating the underlying signal triggers subscribers
+_count.value = 1; // Logs: "Current count: 1"
+
+// ❌ TypeScript Error: Cannot assign to 'value' because it is a read-only property
+// @ts-expect-error
+count.value = 5;
+```
+
+---
+
+## How It Works
+
+1. **Lightweight Proxying:** Unlike `computed(() => source.value)` which creates an extra node in the reactive dependency graph and executes dirty-checking logic, `readonly(source)` is a zero-overhead proxy. It directly delegates reads and reactive tracking to the underlying node.
+2. **Untracked Peeking:** Just like standard signals, `readonly` supports `.peek()` to inspect state without subscribing.
+3. **Symbol Branding:** The resulting wrapper contains `ComputedBrand`, meaning `isComputed(readonly(sig))` and `isReactive(readonly(sig))` both return `true`, while `isSignal(readonly(sig))` returns `false`.
+
+```ts
+import { signal, readonly, isSignal, isComputed } from 'ripple-reactive';
+
+const state = signal('idle');
+const view = readonly(state);
+
+console.log(isSignal(view));   // false
+console.log(isComputed(view)); // true
+```
+
+---
+
+## The Module API Design Pattern
+
+A core architectural pattern in reactive applications is the **Encapsulated Module Pattern**. Internal state remains private and writable only within the module, while consumers import a read-only view and explicit action functions.
+
+This ensures all state mutations flow through designated validation and business logic rules:
+
+```ts
+// auth.store.ts
+import { signal, readonly } from 'ripple-reactive';
+
+interface User {
+  id: string;
+  name: string;
+  role: 'admin' | 'user';
+}
+
+// 1. Private writable signals (internal to this module)
+const _user = signal<User | null>(null);
+const _token = signal<string | null>(null);
+
+// 2. Public read-only exports (safe for consumers to observe)
+export const user = readonly(_user);
+export const isAuthenticated = readonly(signal(false)); // or computed
+
+// 3. Controlled action functions
+export function login(userPayload: User, authToken: string) {
+  // Business logic validation
+  if (!authToken) {
+    throw new Error('Invalid token provided');
+  }
+
+  _user.value = userPayload;
+  _token.value = authToken;
+}
+
+export function logout() {
+  _user.value = null;
+  _token.value = null;
+}
+```
+
+### Consuming the Module
+
+Consumers can subscribe to `user` without the risk of bypassing the `login()` and `logout()` validation routines:
+
+```ts
+// consumer.ts
+import { user, login, logout } from './auth.store.js';
+import { effect } from 'ripple-reactive';
+
+effect(() => {
+  if (user.value) {
+    console.log(`Welcome back, ${user.value.name}!`);
+  } else {
+    console.log('User is logged out.');
+  }
+});
+
+// Perform mutations through sanctioned APIs
+login({ id: 'u_101', name: 'Alice', role: 'admin' }, 'jwt_token_xyz');
+
+// Attempting to mutate directly will fail:
+// user.value = null; // ❌ TS Error! Cannot assign to 'value'
+```
+
+---
+
+## Nuances & Best Practices
+
+<Callout type="warn">
+  **Shallow Immutability:** `readonly()` prevents reassignment of the signal's `.value` property. It does **not** deep-freeze arrays or object properties contained within that value.
+
+  ```ts
+  const list = signal(['apple', 'banana']);
+  const readOnlyList = readonly(list);
+
+  // readOnlyList.value = []; // ❌ Blocked
+  // readOnlyList.value.push('cherry'); // ⚠️ Mutates internal array reference!
+  ```
+
+  For object or collection state, prefer immutable update patterns or use [`reactiveArray()`](/docs/api-reference/collections) / [`createStore()`](/docs/api-reference/store).
+</Callout>
+
+<Callout type="info">
+  **Idempotent Wrapping:** Wrapping an already read-only signal with `readonly()` simply returns another compliant `ReadonlySignal<T>`, preserving consistent reactive tracking.
+</Callout>
