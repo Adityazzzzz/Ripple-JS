@@ -1,0 +1,239 @@
+---
+title: Type Guards
+description: Runtime type checking for reactive primitives.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+When building reusable utilities, custom hooks, or component adapters, functions often need to accept either a raw value or a reactive container. Ripple.js includes runtime type guard utilities that differentiate writable signals, computed derived values, and non-reactive data.
+
+All type guards perform runtime validation using **unique Symbol branding** rather than `instanceof` checks, guaranteeing reliability across `iframe` boundaries, Web Workers, and diverse bundling environments.
+
+---
+
+## Type Guard Overview
+
+```ts
+import { 
+  signal, 
+  computed, 
+  readonly,
+  isSignal, 
+  isComputed, 
+  isReactive 
+} from 'ripple-reactive';
+
+const count = signal(0);
+const double = computed(() => count.value * 2);
+const readOnlyCount = readonly(count);
+
+isSignal(count);          // true
+isSignal(double);         // false
+isSignal(readOnlyCount);   // false
+
+isComputed(double);       // true
+isComputed(readOnlyCount); // true
+isComputed(count);        // false
+
+isReactive(count);        // true
+isReactive(double);       // true
+isReactive(readOnlyCount); // true
+isReactive(42);           // false
+isReactive({ value: 42 }); // false
+```
+
+### Reference Matrix
+
+| Expression | `isSignal()` | `isComputed()` | `isReactive()` |
+| :--- | :--- | :--- | :--- |
+| `signal(T)` | `true` | `false` | `true` |
+| `computed(() => T)` | `false` | `true` | `true` |
+| `readonly(signal)` | `false` | `true` | `true` |
+| Primitive (`42`, `'foo'`, `null`) | `false` | `false` | `false` |
+| Plain object (`{ value: 10 }`) | `false` | `false` | `false` |
+
+---
+
+## isSignal()
+
+Checks whether a given value is a writable `Signal<T>`.
+
+```ts
+function isSignal<T = unknown>(value: unknown): value is Signal<T>;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `value` | `unknown` | The candidate value to inspect. |
+
+### Returns
+
+Returns `true` if the value has been branded as a writable signal created by `signal()`. TypeScript narrows the type to `Signal<T>`, allowing safe access and mutation of `.value`.
+
+```ts
+import { signal, isSignal } from 'ripple-reactive';
+
+function resetIfSignal(target: unknown) {
+  if (isSignal<number>(target)) {
+    target.value = 0; // TypeScript allows assignment
+  }
+}
+
+const score = signal(100);
+resetIfSignal(score);
+console.log(score.value); // 0
+```
+
+---
+
+## isComputed()
+
+Checks whether a given value is a derived, read-only reactive signal (`ReadonlySignal<T>`).
+
+```ts
+function isComputed<T = unknown>(value: unknown): value is ReadonlySignal<T>;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `value` | `unknown` | The candidate value to inspect. |
+
+### Returns
+
+Returns `true` if the value is a computed signal created by `computed()` or a read-only wrapper created by `readonly()`. TypeScript narrows the type to `ReadonlySignal<T>`.
+
+```ts
+import { signal, computed, isComputed } from 'ripple-reactive';
+
+const count = signal(5);
+const square = computed(() => count.value ** 2);
+
+console.log(isComputed(square)); // true
+console.log(isComputed(count));  // false
+```
+
+---
+
+## isReactive()
+
+Checks whether a given value is **any** reactive primitive—either a writable `Signal<T>` or a read-only `ReadonlySignal<T>`.
+
+```ts
+function isReactive<T = unknown>(
+  value: unknown
+): value is Signal<T> | ReadonlySignal<T>;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `value` | `unknown` | The candidate value to inspect. |
+
+### Returns
+
+Returns `true` if `isSignal(value)` or `isComputed(value)` evaluates to `true`.
+
+---
+
+## Why Symbol Branding?
+
+Many JavaScript libraries use `instanceof` to verify classes. However, `instanceof` has notable pitfalls in modern development:
+
+1. **Cross-Realm Incompatibilities:** If your application spans multiple execution contexts (such as `<iframe>` elements, Web Workers, or Micro-Frontends), objects created in one realm do not share prototypes with another.
+2. **Minification & Bundler Duplication:** If two bundled versions of a library exist on the page, `instanceof` will fail across bundle boundaries.
+
+Ripple.js attaches unique `Symbol` brands (`SignalBrand` and `ComputedBrand`) to objects upon creation:
+
+```ts
+// Internal representation check
+export function isSignal<T = unknown>(value: unknown): value is Signal<T> {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    SignalBrand in value
+  );
+}
+```
+
+<Callout type="info">
+  Because branding relies on symbols, ordinary objects shaped like `{ value: 42 }` will never accidentally register as reactive.
+</Callout>
+
+---
+
+## Practical Example: Polymorphic Utilities
+
+A common design pattern is building helper functions that accept either a static value or a reactive signal. Using `isReactive()`, you can transparently unwrap inputs or construct dynamic computations:
+
+### Example 1: `toValue()` Helper
+
+```ts
+import { isReactive, type Signal, type ReadonlySignal } from 'ripple-reactive';
+
+type MaybeSignal<T> = T | Signal<T> | ReadonlySignal<T>;
+
+/**
+ * Extracts the current value from either a raw primitive or a reactive signal.
+ */
+export function toValue<T>(input: MaybeSignal<T>): T {
+  return isReactive(input) ? input.value : input;
+}
+
+// Usage with static and reactive values
+const rawValue = toValue(100);          // 100
+const signalValue = toValue(signal(50)); // 50
+```
+
+### Example 2: Flexible Formatting Function
+
+Here, a formatting utility outputs a static string if passed a number, or a live `computed()` signal if passed a reactive count:
+
+```ts
+import { 
+  signal, 
+  computed, 
+  isReactive, 
+  type Signal, 
+  type ReadonlySignal 
+} from 'ripple-reactive';
+
+function formatCurrency(
+  amount: number | Signal<number> | ReadonlySignal<number>,
+  currency = 'USD'
+): string | ReadonlySignal<string> {
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+  });
+
+  if (isReactive(amount)) {
+    // If the input is reactive, return a reactive computed signal
+    return computed(() => formatter.format(amount.value));
+  }
+
+  // If the input is static, return the formatted string immediately
+  return formatter.format(amount);
+}
+
+// 1. Static call
+const staticOutput = formatCurrency(29.99); 
+console.log(staticOutput); // "$29.99" (string)
+
+// 2. Reactive call
+const cartTotal = signal(99.5);
+const reactiveOutput = formatCurrency(cartTotal); 
+console.log(reactiveOutput.value); // "$99.50" (ReadonlySignal<string>)
+
+cartTotal.value = 149.0;
+console.log(reactiveOutput.value); // "$149.00"
+```
+
+<Callout type="warn">
+  Remember that `isSignal()` only matches **writable** signals. If you wish to allow both writable signals and derived computeds, always check with `isReactive()`.
+</Callout>
