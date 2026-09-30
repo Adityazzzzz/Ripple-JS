@@ -10,45 +10,51 @@ While fine-grained signals are perfect for isolated values, applications often r
 
 ## Reactive Stores
 
-A `store` is a deeply reactive proxy around a standard JavaScript object or array. Instead of creating individual signals for every property, you can wrap an entire object.
+A `createStore` defines a Zustand/Pinia-style store with typed state, derived getters, and actions — all backed by signals under the hood.
 
 ```ts
-import { store, effect } from 'ripple-reactive';
+import { createStore, effect } from 'ripple-reactive';
 
-const user = store({
-  name: 'Aditya',
-  preferences: {
-    theme: 'dark',
-    notifications: true
-  }
+const counter = createStore({
+  state: { count: 0, name: 'Aditya' },
+  getters: {
+    double: (state) => state.count.value * 2,
+    greeting: (state) => `Hello, ${state.name.value}!`,
+  },
+  actions: {
+    increment: (state) => state.count.value++,
+    add: (state, amount: number) => state.count.value += amount,
+    setName: (state, name: string) => state.name.value = name,
+  },
 });
 
+// Use actions directly
+counter.increment();
+counter.add(10);
+
+// Read getters (they're computed signals)
 effect(() => {
-  // This effect only tracks `user.preferences.theme`
-  console.log(`Theme switched to: ${user.preferences.theme}`);
+  console.log(counter.double.value); // 22
+  console.log(counter.greeting.value); // "Hello, Aditya!"
 });
 
-// Triggers the effect
-user.preferences.theme = 'light';
-
-// Does NOT trigger the effect (name wasn't read inside the effect)
-user.name = 'ADITYA SING';
+// Reset to initial state
+counter.$reset();
 ```
 
-Stores use JavaScript Proxies under the hood to intercept property access. This means nested objects and arrays are automatically made reactive as you access them.
+<Callout type="info">
+  Each property in `state` becomes an individual signal. Getters become computed values. Actions receive the state object and any extra arguments you pass.
+</Callout>
 
 ## Time-Travel (Undo/Redo)
 
-Ripple.js includes a built-in `createHistory` wrapper that attaches a time-travel timeline to any signal or store. This is exceptionally useful for canvas editors, rich text interfaces, or complex forms.
+Ripple.js includes a built-in `createHistory` wrapper that attaches a time-travel timeline to any signal. This is exceptionally useful for canvas editors, rich text interfaces, or complex forms.
 
 ```ts
-import { signal } from 'ripple-reactive';
-import { createHistory } from 'ripple-reactive/history';
+import { signal, createHistory } from 'ripple-reactive';
 
 const documentText = signal('');
-const { undo, redo, canUndo, canRedo, history } = createHistory(documentText, {
-  maxDepth: 50 // Limit the stack size to prevent memory leaks
-});
+const history = createHistory(documentText, { limit: 50 });
 
 // User types
 documentText.value = 'Hello';
@@ -56,64 +62,50 @@ documentText.value = 'Hello World';
 
 console.log(documentText.value); // 'Hello World'
 
-if (canUndo()) {
-  undo();
-  console.log(documentText.value); // 'Hello'
-}
+history.undo();
+console.log(documentText.value); // 'Hello'
 
-redo();
+history.redo();
 console.log(documentText.value); // 'Hello World'
+
+// Check capabilities
+console.log(history.canUndo); // true
+console.log(history.canRedo); // false
 ```
 
 ## Persistence
 
-The `persist` utility automatically syncs a signal or store to the browser's `localStorage` or `sessionStorage`. It handles JSON serialization and deserialization automatically.
+The `persistedSignal` utility creates a signal that automatically syncs with the browser's `localStorage`. It handles JSON serialization and deserialization automatically.
 
-<Tabs items={['Local Storage', 'Session Storage']}>
-  <Tab value="Local Storage">
-  ```ts
-  import { signal } from 'ripple-reactive';
-  import { persist } from 'ripple-reactive/persistence';
+```ts
+import { persistedSignal } from 'ripple-reactive';
 
-  // Initializes with the value from localStorage if it exists,
-  // otherwise defaults to 'dark'.
-  const theme = persist(signal('dark'), {
-    key: 'ripple-app-theme',
-    storage: window.localStorage
-  });
+// Initializes with the value from localStorage if it exists,
+// otherwise defaults to 'dark'.
+const theme = persistedSignal('ripple-app-theme', 'dark');
 
-  // Automatically saved to localStorage instantly
-  theme.value = 'light';
-  ```
-  </Tab>
+// Automatically saved to localStorage
+theme.value = 'light';
 
-  <Tab value="Session Storage">
-  ```ts
-  import { store } from 'ripple-reactive';
-  import { persist } from 'ripple-reactive/persistence';
+// Survives page refreshes!
+// Also syncs across browser tabs via the 'storage' event.
+```
 
-  const cart = persist(store({ items: [], total: 0 }), {
-    key: 'ecommerce-cart',
-    storage: window.sessionStorage
-  });
-
-  // Automatically syncs the entire object to sessionStorage
-  cart.items.push({ id: 1, name: 'Mechanical Keyboard' });
-  ```
-  </Tab>
-</Tabs>
+<Callout type="warn">
+  `persistedSignal` requires a browser environment with `localStorage`. It will fall back to the default value in Node.js or SSR contexts.
+</Callout>
 
 ## Combining Utilities
 
-Because Ripple.js utilities are highly composable, you can wrap a persistent store in a history tracker to create an undo-able state that survives page reloads.
+Because Ripple.js utilities are highly composable, you can combine persistence with history to create undo-able state that survives page reloads.
 
 ```ts
-const settings = persist(store({ volume: 50, brightness: 80 }), {
-  key: 'app-settings',
-  storage: window.localStorage
-});
+import { persistedSignal, createHistory } from 'ripple-reactive';
 
+const settings = persistedSignal('app-settings', { volume: 50, brightness: 80 });
 const settingsHistory = createHistory(settings);
-```
 
-Once you save this, the next logical step is to create the framework adapters guide inside the `content/docs/frameworks/index.mdx` file.
+// Change, undo, and it's all saved to localStorage automatically
+settings.value = { volume: 75, brightness: 80 };
+settingsHistory.undo(); // back to { volume: 50, brightness: 80 }
+```
