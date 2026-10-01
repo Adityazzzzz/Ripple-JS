@@ -9,8 +9,8 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 Reactive applications often perform side-effects, I/O operations, and asynchronous requests. An unhandled exception inside a reactive effect could silently halt updates or bubble up to crash the entire application.
 
 Ripple.js provides two dedicated error-handling primitives:
-* **`catchError()`** â€” An error boundary for reactive effects that catches exceptions and prevents crashing while keeping subscriptions active.
-* **`fromPromise()`** â€” Converts asynchronous Promises into reactive signals that track loading states, errors, and resolved values.
+* `catchError()` â€” An error boundary for reactive effects that catches exceptions and prevents crashing while keeping subscriptions active.
+* `fromPromise()` â€” Converts asynchronous Promises into reactive signals that track loading states, errors, and resolved values.
 
 
 ## catchError()
@@ -75,7 +75,7 @@ dispose();
 ```
 
 <Callout type="info">
-  **Continuous Dependency Tracking:** Unlike a standard `try...catch` block placed outside an effect, `catchError()` keeps the reactive subscription alive. When any dependency changes in the future, the effect attempts to run again.
+  Continuous Dependency Tracking: Unlike a standard `try...catch` block placed outside an effect, `catchError()` keeps the reactive subscription alive. When any dependency changes in the future, the effect attempts to run again.
 </Callout>
 
 #### Managing Fallback State & Cleanup
@@ -198,5 +198,5 @@ console.log(greeting.value.value);   // "Hello, Ripple!"
 ```
 
 <Callout type="warn">
-  `fromPromise()` represents a **single, one-shot** asynchronous operation. If you need to re-fetch automatically whenever input parameters or signals change (e.g. changing search queries or page numbers), use [`resource()`](/docs/api-reference/resource) instead.
+  `fromPromise()` represents a single, one-shot asynchronous operation. If you need to re-fetch automatically whenever input parameters or signals change (e.g. changing search queries or page numbers), use [`resource()`](/docs/api-reference/resource) instead.
 </Callout>

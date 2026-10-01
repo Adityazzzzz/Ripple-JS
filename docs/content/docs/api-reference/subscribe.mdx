@@ -88,11 +88,11 @@ Ripple.js provides three distinct ways to react to state changes. Choosing the r
 
 | Feature | `subscribe()` | `watch()` | `effect()` |
 | :--- | :--- | :--- | :--- |
-| **Source Target** | Single `Signal<T>` or `ReadonlySignal<T>` | Explicit getter function `() => T` | Implicit (all signals read inside) |
-| **Callback Arguments** | `(value: T)` | `(newValue: T, oldValue: T \| undefined)` | `(onCleanup)` |
-| **Initial Run** | Immediate (synchronous) | Lazy by default (immediate with `{ immediate: true }`) | Immediate (synchronous) |
-| **Callback Tracking** | Untracked (only subscribes to `source`) | Untracked (only subscribes to `source`) | Auto-tracks every signal accessed |
-| **Primary Use Case** | External callbacks, analytics, simple 1:1 listeners | Old/new comparisons, conditional side-effects, lazy watchers | State synchronization, DOM updates, multi-dependency flows |
+| Source Target | Single `Signal<T>` or `ReadonlySignal<T>` | Explicit getter function `() => T` | Implicit (all signals read inside) |
+| Callback Arguments | `(value: T)` | `(newValue: T, oldValue: T \| undefined)` | `(onCleanup)` |
+| Initial Run | Immediate (synchronous) | Lazy by default (immediate with `{ immediate: true }`) | Immediate (synchronous) |
+| Callback Tracking | Untracked (only subscribes to `source`) | Untracked (only subscribes to `source`) | Auto-tracks every signal accessed |
+| Primary Use Case | External callbacks, analytics, simple 1:1 listeners | Old/new comparisons, conditional side-effects, lazy watchers | State synchronization, DOM updates, multi-dependency flows |
 
 <Tabs items={['subscribe()', 'watch()', 'effect()']}>
   <Tab value="subscribe()">
@@ -138,7 +138,7 @@ const stopEffect = effect(() => {
 </Tabs>
 
 <Callout type="info">
-  **Immediate Execution:** `subscribe()` runs its callback immediately upon creation with the current value. If you need lazy observation that only executes on *future* changes, use [`watch()`](/docs/api-reference/watch) instead.
+  Immediate Execution: `subscribe()` runs its callback immediately upon creation with the current value. If you need lazy observation that only executes on future changes, use [`watch()`](/docs/api-reference/watch) instead.
 </Callout>
 
 <Callout type="warn">

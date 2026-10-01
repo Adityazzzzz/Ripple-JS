@@ -8,9 +8,9 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 High-frequency events like keystrokes, scroll movements, window resizing, and pointer tracking can trigger hundreds of reactive evaluations per second. Ripple.js provides three dedicated rate-limiting utilities to keep your applications responsive and prevent redundant workloads:
 
-- **`debouncedEffect()`**: Delays effect execution until state has settled for a given duration.
-- **`debouncedSignal()`**: A signal whose reactive updates are delayed, featuring an `.immediate` accessor for responsive UI controls.
-- **`throttledEffect()`**: Caps effect execution rate to at most once per time window, with automatic trailing execution.
+- `debouncedEffect()`: Delays effect execution until state has settled for a given duration.
+- `debouncedSignal()`: A signal whose reactive updates are delayed, featuring an `.immediate` accessor for responsive UI controls.
+- `throttledEffect()`: Caps effect execution rate to at most once per time window, with automatic trailing execution.
 
 ```ts
 function debouncedEffect(fn: () => void, delay: number): EffectHandle;
@@ -128,7 +128,7 @@ username.value = 'aditya';
 
 ## `throttledEffect()`
 
-`throttledEffect` ensures an effect executes at most once every `interval` milliseconds. Unlike debounce (which waits for inactivity), throttling runs the effect periodically during continuous activity and guarantees a **trailing execution** so the final state is never skipped.
+`throttledEffect` ensures an effect executes at most once every `interval` milliseconds. Unlike debounce (which waits for inactivity), throttling runs the effect periodically during continuous activity and guarantees a trailing execution so the final state is never skipped.
 
 ```ts
 function throttledEffect(fn: () => void, interval: number): EffectHandle;
@@ -174,19 +174,23 @@ stopScrollObserver();
   <Tab value="Comparison Table">
 | Utility | Mechanism | Ideal Use Cases |
 | :--- | :--- | :--- |
-| **`debouncedEffect`** | Waits until changes stop for `delay` ms | Search-as-you-type, auto-save to disk/cloud, window resize completion |
-| **`debouncedSignal`** | Buffers signal writes; exposes `.immediate` | Search inputs, filter fields, sliders needing immediate visual feedback |
-| **`throttledEffect`** | Fires at fixed `interval` rate + trailing call | Scroll observers, canvas rendering, mouse tracking, drag-and-drop |
+| `debouncedEffect` | Waits until changes stop for `delay` ms | Search-as-you-type, auto-save to disk/cloud, window resize completion |
+| `debouncedSignal` | Buffers signal writes; exposes `.immediate` | Search inputs, filter fields, sliders needing immediate visual feedback |
+| `throttledEffect` | Fires at fixed `interval` rate + trailing call | Scroll observers, canvas rendering, mouse tracking, drag-and-drop |
   </Tab>
   <Tab value="Decision Guide">
-- **Use `debouncedEffect`** when you want to execute an action *only after the user finishes interacting* (e.g. typing a search query or editing a form).
-- **Use `debouncedSignal`** when you have a piece of state bound to an input that needs *immediate UI responsiveness* (`.immediate`) while delaying *downstream computations or network calls* (`.value`).
-- **Use `throttledEffect`** when events fire continuously (like scrolling or dragging) and you want *steady intermediate updates* capped at a maximum frequency.
+
+Use `debouncedEffect` when you want to execute an action only after the user finishes interacting (e.g. typing a search query or editing a form).
+
+Use `debouncedSignal` when you have a piece of state bound to an input that needs immediate UI responsiveness (`.immediate`) while delaying downstream computations or network calls (`.value`).
+
+Use `throttledEffect` when events fire continuously (like scrolling or dragging) and you want steady intermediate updates capped at a maximum frequency.
+
   </Tab>
 </Tabs>
 
 <Callout type="info">
-  **Trailing Execution Guarantee:** Both `debouncedEffect` and `throttledEffect` guarantee that the final settled value of your signals will be executed. In `throttledEffect`, if a signal changes midway through an active interval, a trailing execution is automatically scheduled for the end of the interval.
+  Trailing Execution Guarantee: Both `debouncedEffect` and `throttledEffect` guarantee that the final settled value of your signals will be executed. In `throttledEffect`, if a signal changes midway through an active interval, a trailing execution is automatically scheduled for the end of the interval.
 </Callout>
 
 <Callout type="warn">

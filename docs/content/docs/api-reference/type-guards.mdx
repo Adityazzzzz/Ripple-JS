@@ -8,7 +8,7 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 When building reusable utilities, custom hooks, or component adapters, functions often need to accept either a raw value or a reactive container. Ripple.js includes runtime type guard utilities that differentiate writable signals, computed derived values, and non-reactive data.
 
-All type guards perform runtime validation using **unique Symbol branding** rather than `instanceof` checks, guaranteeing reliability across `iframe` boundaries, Web Workers, and diverse bundling environments.
+All type guards perform runtime validation using unique Symbol branding rather than `instanceof` checks, guaranteeing reliability across `iframe` boundaries, Web Workers, and diverse bundling environments.
 
 
 ## Type Guard Overview
@@ -108,7 +108,7 @@ Returns `true` if the value is a computed signal created by `computed()` or a re
 import { signal, computed, isComputed } from 'ripple-reactive';
 
 const count = signal(5);
-const square = computed(() => count.value ** 2);
+const square = computed(() => count.value  2);
 
 console.log(isComputed(square)); // true
 console.log(isComputed(count));  // false
@@ -117,7 +117,7 @@ console.log(isComputed(count));  // false
 
 ## isReactive()
 
-Checks whether a given value is **any** reactive primitiveâ€”either a writable `Signal<T>` or a read-only `ReadonlySignal<T>`.
+Checks whether a given value is any reactive primitiveâ€”either a writable `Signal<T>` or a read-only `ReadonlySignal<T>`.
 
 ```ts
 function isReactive<T = unknown>(
@@ -140,8 +140,8 @@ Returns `true` if `isSignal(value)` or `isComputed(value)` evaluates to `true`.
 
 Many JavaScript libraries use `instanceof` to verify classes. However, `instanceof` has notable pitfalls in modern development:
 
-1. **Cross-Realm Incompatibilities:** If your application spans multiple execution contexts (such as `<iframe>` elements, Web Workers, or Micro-Frontends), objects created in one realm do not share prototypes with another.
-2. **Minification & Bundler Duplication:** If two bundled versions of a library exist on the page, `instanceof` will fail across bundle boundaries.
+1. Cross-Realm Incompatibilities: If your application spans multiple execution contexts (such as `<iframe>` elements, Web Workers, or Micro-Frontends), objects created in one realm do not share prototypes with another.
+2. Minification & Bundler Duplication: If two bundled versions of a library exist on the page, `instanceof` will fail across bundle boundaries.
 
 Ripple.js attaches unique `Symbol` brands (`SignalBrand` and `ComputedBrand`) to objects upon creation:
 
@@ -172,7 +172,7 @@ import { isReactive, type Signal, type ReadonlySignal } from 'ripple-reactive';
 
 type MaybeSignal<T> = T | Signal<T> | ReadonlySignal<T>;
 
-/**
+/
  * Extracts the current value from either a raw primitive or a reactive signal.
  */
 export function toValue<T>(input: MaybeSignal<T>): T {
@@ -229,5 +229,5 @@ console.log(reactiveOutput.value); // "$149.00"
 ```
 
 <Callout type="warn">
-  Remember that `isSignal()` only matches **writable** signals. If you wish to allow both writable signals and derived computeds, always check with `isReactive()`.
+  Remember that `isSignal()` only matches writable signals. If you wish to allow both writable signals and derived computeds, always check with `isReactive()`.
 </Callout>

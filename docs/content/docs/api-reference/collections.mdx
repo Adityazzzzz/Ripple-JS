@@ -70,19 +70,19 @@ console.log(list.items); // [1, 2, 3]
 ## When to use Collections vs Signals
 
 <Callout type="info">
-  **Rule of Thumb:**
-  If you frequently update *individual items* in a large list, use `reactiveArray()` or `reactiveMap()`. 
-  If you always replace the *entire list* at once (e.g., fetching a fresh list from an API), a simple `signal([])` is more efficient.
+  Rule of Thumb:
+  If you frequently update individual items in a large list, use `reactiveArray()` or `reactiveMap()`. 
+  If you always replace the entire list at once (e.g., fetching a fresh list from an API), a simple `signal([])` is more efficient.
 </Callout>
 
-**Use Signals:**
+Use Signals:
 ```ts
 const userList = signal([]);
 // Replacing the entire array
 userList(await fetchUsers());
 ```
 
-**Use Reactive Collections:**
+Use Reactive Collections:
 ```ts
 const activeConnections = reactiveMap();
 // Frequent granular updates

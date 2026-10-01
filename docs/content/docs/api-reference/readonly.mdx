@@ -56,9 +56,9 @@ count.value = 5;
 
 ## How It Works
 
-1. **Lightweight Proxying:** Unlike `computed(() => source.value)` which creates an extra node in the reactive dependency graph and executes dirty-checking logic, `readonly(source)` is a zero-overhead proxy. It directly delegates reads and reactive tracking to the underlying node.
-2. **Untracked Peeking:** Just like standard signals, `readonly` supports `.peek()` to inspect state without subscribing.
-3. **Symbol Branding:** The resulting wrapper contains `ComputedBrand`, meaning `isComputed(readonly(sig))` and `isReactive(readonly(sig))` both return `true`, while `isSignal(readonly(sig))` returns `false`.
+1. Lightweight Proxying: Unlike `computed(() => source.value)` which creates an extra node in the reactive dependency graph and executes dirty-checking logic, `readonly(source)` is a zero-overhead proxy. It directly delegates reads and reactive tracking to the underlying node.
+2. Untracked Peeking: Just like standard signals, `readonly` supports `.peek()` to inspect state without subscribing.
+3. Symbol Branding: The resulting wrapper contains `ComputedBrand`, meaning `isComputed(readonly(sig))` and `isReactive(readonly(sig))` both return `true`, while `isSignal(readonly(sig))` returns `false`.
 
 ```ts
 import { signal, readonly, isSignal, isComputed } from 'ripple-reactive';
@@ -73,7 +73,7 @@ console.log(isComputed(view)); // true
 
 ## The Module API Design Pattern
 
-A core architectural pattern in reactive applications is the **Encapsulated Module Pattern**. Internal state remains private and writable only within the module, while consumers import a read-only view and explicit action functions.
+A core architectural pattern in reactive applications is the Encapsulated Module Pattern. Internal state remains private and writable only within the module, while consumers import a read-only view and explicit action functions.
 
 This ensures all state mutations flow through designated validation and business logic rules:
 
@@ -140,7 +140,7 @@ login({ id: 'u_101', name: 'Alice', role: 'admin' }, 'jwt_token_xyz');
 ## Nuances & Best Practices
 
 <Callout type="warn">
-  **Shallow Immutability:** `readonly()` prevents reassignment of the signal's `.value` property. It does **not** deep-freeze arrays or object properties contained within that value.
+  Shallow Immutability: `readonly()` prevents reassignment of the signal's `.value` property. It does not deep-freeze arrays or object properties contained within that value.
 
   ```ts
   const list = signal(['apple', 'banana']);
@@ -154,5 +154,5 @@ login({ id: 'u_101', name: 'Alice', role: 'admin' }, 'jwt_token_xyz');
 </Callout>
 
 <Callout type="info">
-  **Idempotent Wrapping:** Wrapping an already read-only signal with `readonly()` simply returns another compliant `ReadonlySignal<T>`, preserving consistent reactive tracking.
+  Idempotent Wrapping: Wrapping an already read-only signal with `readonly()` simply returns another compliant `ReadonlySignal<T>`, preserving consistent reactive tracking.
 </Callout>

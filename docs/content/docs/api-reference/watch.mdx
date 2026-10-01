@@ -5,7 +5,7 @@ description: Observe changes to a specific source without tracking everything.
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-While `effect()` automatically tracks all signals read during its execution, sometimes you only want to react when a *specific* piece of state changes. `watch()` provides a precise, Vue-style watcher that runs a callback only when its explicit source changes.
+While `effect()` automatically tracks all signals read during its execution, sometimes you only want to react when a specific piece of state changes. `watch()` provides a precise, Vue-style watcher that runs a callback only when its explicit source changes.
 
 ## Usage
 
@@ -58,11 +58,11 @@ watch(
 
 | Feature | `effect()` | `watch()` |
 |---------|-----------|-----------|
-| **Dependencies** | Implicit (auto-tracked) | Explicit (via source function) |
-| **Execution** | Immediate | Lazy by default |
-| **Callback tracking** | Tracks all signals read | Callback is untracked |
-| **Old/New values** | No | Yes |
-| **Use case** | UI rendering, synchronization | Side-effects on specific state changes |
+| Dependencies | Implicit (auto-tracked) | Explicit (via source function) |
+| Execution | Immediate | Lazy by default |
+| Callback tracking | Tracks all signals read | Callback is untracked |
+| Old/New values | No | Yes |
+| Use case | UI rendering, synchronization | Side-effects on specific state changes |
 
 ## Real-world Example: API Calls on State Change
 
