@@ -91,19 +91,19 @@ const text = toVueRef(textSignal);
 
 The `ripple-reactive/svelte` package exposes a standard Svelte store contract, allowing you to use Svelte's reactive `$` auto-subscription syntax.
 
-### `toSvelteRef`
+### `toStore`
 
 Wraps a Ripple signal in a Svelte-compatible store interface.
 
 ```svelte
 <script>
   import { signal } from 'ripple-reactive';
-  import { toSvelteRef } from 'ripple-reactive/svelte';
+  import { toStore } from 'ripple-reactive/svelte';
 
   const countSignal = signal(0);
   
   // Create a Svelte store wrapper
-  const count = toSvelteRef(countSignal); 
+  const count = toStore(countSignal); 
 </script>
 
 <!-- Use Svelte's native $ prefix to read and subscribe -->

@@ -1,0 +1,202 @@
+---
+title: Error Handling
+description: Error boundaries and Promise interop for reactive effects.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+Reactive applications often perform side-effects, I/O operations, and asynchronous requests. An unhandled exception inside a reactive effect could silently halt updates or bubble up to crash the entire application.
+
+Ripple.js provides two dedicated error-handling primitives:
+* `catchError()` â€” An error boundary for reactive effects that catches exceptions and prevents crashing while keeping subscriptions active.
+* `fromPromise()` â€” Converts asynchronous Promises into reactive signals that track loading states, errors, and resolved values.
+
+
+## catchError()
+
+Wraps an effect callback inside an isolated error boundary. If the effect throws during its initial run or any subsequent reactive re-evaluation, the `onError` handler is invoked instead of propagating the error to the top-level runtime.
+
+```ts
+function catchError(
+  fn: (onCleanup: (cleanupFn: () => void) => void) => void,
+  onError: (error: unknown) => void
+): EffectHandle;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `fn` | `(onCleanup: (cleanupFn: () => void) => void) => void` | The reactive effect function to execute and track. Receives an `onCleanup` registrar for teardown tasks. |
+| `onError` | `(error: unknown) => void` | Callback invoked whenever `fn` throws an error during execution. |
+
+### Returns
+
+Returns an `EffectHandle` (`() => void`). Invoking this function disposes the effect, unsubscribes it from all signals, and runs any active cleanup logic.
+
+### Usage
+
+#### Basic Error Boundary
+
+In a standard `effect()`, a runtime exception (such as a failed network call or a `TypeError`) escapes into the global environment. With `catchError()`, the failure is trapped locally:
+
+```ts
+import { signal, catchError } from 'ripple-reactive';
+
+const userId = signal(1);
+
+function fetchUser(id: number) {
+  if (id <= 0) {
+    throw new Error('Invalid user ID');
+  }
+  return { id, name: `User #${id}` };
+}
+
+// Create an error-boundary effect
+const dispose = catchError(
+  () => {
+    const user = fetchUser(userId.value); // might throw
+    console.log(`Loaded user: ${user.name}`);
+  },
+  (error) => {
+    console.error('Failed to load user:', error);
+  }
+);
+
+// Triggering an error will invoke onError without crashing
+userId.value = -1; // Logs: Failed to load user: Error: Invalid user ID
+
+// When valid state is restored, the effect resumes normal execution!
+userId.value = 42; // Logs: Loaded user: User #42
+
+// Stop the effect when no longer needed
+dispose();
+```
+
+<Callout type="info">
+  Continuous Dependency Tracking: Unlike a standard `try...catch` block placed outside an effect, `catchError()` keeps the reactive subscription alive. When any dependency changes in the future, the effect attempts to run again.
+</Callout>
+
+#### Managing Fallback State & Cleanup
+
+You can pair `catchError()` with reactive signals to present fallback user interfaces and clean up active resources:
+
+```ts
+import { signal, catchError } from 'ripple-reactive';
+
+const endpoint = signal('https://api.example.com/stream');
+const isOnline = signal(true);
+const lastError = signal<string | null>(null);
+
+const stop = catchError(
+  (onCleanup) => {
+    lastError.value = null; // Clear prior errors on re-run
+
+    const socket = new WebSocket(endpoint.value);
+    socket.onopen = () => isOnline.value = true;
+    socket.onerror = () => {
+      throw new Error(`Socket connection failed for ${endpoint.value}`);
+    };
+
+    onCleanup(() => {
+      socket.close();
+      isOnline.value = false;
+    });
+  },
+  (err) => {
+    isOnline.value = false;
+    lastError.value = err instanceof Error ? err.message : String(err);
+  }
+);
+```
+
+
+## fromPromise()
+
+Converts a standard JavaScript `Promise` into a reactive signal structure. It tracks whether the promise is currently pending, captures any rejection into an `error` signal, and stores the resolved outcome in a `value` signal.
+
+```ts
+function fromPromise<T>(promise: Promise<T>): PromiseSignal<T>;
+```
+
+### Type Definition
+
+```ts
+interface PromiseSignal<T> {
+  /** The resolved data (undefined while pending or on rejection) */
+  readonly value: ReadonlySignal<T | undefined>;
+  /** Alias for value */
+  readonly data: ReadonlySignal<T | undefined>;
+  /** The rejection error (undefined if pending or resolved successfully) */
+  readonly error: ReadonlySignal<Error | undefined>;
+  /** Whether the promise is currently pending */
+  readonly loading: ReadonlySignal<boolean>;
+}
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `promise` | `Promise<T>` | The asynchronous promise to observe reactively. |
+
+### Returns
+
+Returns a `PromiseSignal<T>` containing three read-only signals:
+* `value` (and its alias `data`): Holds the resolved payload of type `T`, or `undefined` until the promise completes.
+* `loading`: `true` initially, switching to `false` once resolved or rejected.
+* `error`: Holds the thrown error if rejected, or `undefined` otherwise. Rejections that are not instances of `Error` are automatically converted into `new Error(...)`.
+
+### Usage
+
+#### Tracking Async Status in Effects
+
+```ts
+import { fromPromise, effect } from 'ripple-reactive';
+
+interface UserProfile {
+  id: string;
+  name: string;
+}
+
+const userPromise: Promise<UserProfile> = fetch('/api/user')
+  .then((res) => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  });
+
+const user = fromPromise(userPromise);
+
+effect(() => {
+  if (user.loading.value) {
+    console.log('Loading user data...');
+  } else if (user.error.value) {
+    console.error('Error fetching user:', user.error.value.message);
+  } else {
+    console.log('User loaded:', user.value.value);
+  }
+});
+```
+
+#### Synchronous Initial Values
+
+When initialized, `user.loading.value` is immediately `true` and `user.value.value` is `undefined`. As soon as the microtask queue resolves the promise, Ripple.js updates the internal signals and downstream effects re-run synchronously:
+
+```ts
+import { fromPromise } from 'ripple-reactive';
+
+const greeting = fromPromise(Promise.resolve('Hello, Ripple!'));
+
+console.log(greeting.loading.value); // true (microtask pending)
+console.log(greeting.value.value);   // undefined
+
+await Promise.resolve(); // Wait for next tick
+
+console.log(greeting.loading.value); // false
+console.log(greeting.value.value);   // "Hello, Ripple!"
+```
+
+<Callout type="warn">
+  `fromPromise()` represents a single, one-shot asynchronous operation. If you need to re-fetch automatically whenever input parameters or signals change (e.g. changing search queries or page numbers), use [`resource()`](/docs/api-reference/resource) instead.
+</Callout>

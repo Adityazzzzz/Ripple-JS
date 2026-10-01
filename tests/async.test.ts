@@ -53,6 +53,7 @@ describe('fromPromise', () => {
     
     expect(p.loading.value).toBe(false);
     expect(p.data.value).toBe(42);
+    expect(p.value.value).toBe(42);
     expect(p.error.value).toBeUndefined();
   });
 

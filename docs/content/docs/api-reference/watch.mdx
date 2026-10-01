@@ -1,0 +1,102 @@
+---
+title: watch()
+description: Observe changes to a specific source without tracking everything.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+While `effect()` automatically tracks all signals read during its execution, sometimes you only want to react when a specific piece of state changes. `watch()` provides a precise, Vue-style watcher that runs a callback only when its explicit source changes.
+
+## Usage
+
+`watch(source, callback, options?)` takes a source function, a callback, and optional configuration.
+
+```ts
+import { signal, watch } from 'ripple-reactive';
+
+const count = signal(0);
+const name = signal('Alice');
+
+// Only runs when `count` changes
+watch(
+  () => count.value,
+  (newCount, oldCount) => {
+    console.log(`Count changed from ${oldCount} to ${newCount}`);
+    // Reading name here does NOT make the watcher depend on name
+    console.log(`Current name is ${name.value}`);
+  }
+);
+
+count.value = 1; // Logs: Count changed from 0 to 1, Current name is Alice
+name.value = 'Bob'; // Does NOT trigger the watcher
+```
+
+<Callout type="info">
+The callback inside `watch()` is automatically wrapped in `untrack()`. This means any signals you read inside the callback will not be tracked as dependencies for the watcher.
+</Callout>
+
+## Immediate Execution
+
+By default, `watch()` is lazy: the callback does not run immediately upon creation; it only runs on the next change. To make it run immediately, use `{ immediate: true }`.
+
+```ts
+import { signal, watch } from 'ripple-reactive';
+
+const isOnline = signal(true);
+
+watch(
+  () => isOnline.value,
+  (online) => {
+    console.log(`User is now ${online ? 'online' : 'offline'}`);
+  },
+  { immediate: true }
+); 
+// Logs immediately: "User is now online"
+```
+
+## `watch()` vs `effect()`
+
+| Feature | `effect()` | `watch()` |
+|---------|-----------|-----------|
+| Dependencies | Implicit (auto-tracked) | Explicit (via source function) |
+| Execution | Immediate | Lazy by default |
+| Callback tracking | Tracks all signals read | Callback is untracked |
+| Old/New values | No | Yes |
+| Use case | UI rendering, synchronization | Side-effects on specific state changes |
+
+## Real-world Example: API Calls on State Change
+
+```ts
+import { signal, watch } from 'ripple-reactive';
+
+const searchInput = signal('');
+const results = signal<string[]>([]);
+
+watch(
+  () => searchInput.value,
+  async (query) => {
+    if (query.length < 3) {
+      results.value = [];
+      return;
+    }
+    
+    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    results.value = data;
+  }
+);
+```
+
+## Signatures
+
+```ts
+interface WatchOptions {
+  immediate?: boolean;
+}
+
+function watch<T>(
+  source: () => T,
+  callback: (newValue: T, oldValue: T | undefined) => void,
+  options?: WatchOptions
+): EffectHandle;
+```

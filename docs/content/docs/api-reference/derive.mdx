@@ -1,0 +1,161 @@
+---
+title: derive()
+description: Creates multiple computed values at once from a definition object.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+Creates multiple computed values at once from an object of derivation functions. Each property in the returned object is a lazy, memoized `ReadonlySignal` that automatically updates when its reactive dependencies change.
+
+```ts
+function derive<T extends Record<string, () => any>>(
+  definitions: T
+): { [K in keyof T]: ReadonlySignal<ReturnType<T[K]>> };
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `definitions` | `Record<string, () => any>` | An object mapping property keys to pure computation functions. |
+
+### Returns
+
+Returns an object with the same keys, where each value is a `ReadonlySignal` representing the derived computed value.
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| `[key].value` | `ReturnType<T[K]>` | The evaluated result of the derivation function. |
+| `[key].peek()` | `() => ReturnType<T[K]>` | Reads the current computed value without creating a reactive subscription. |
+
+
+## Usage
+
+### Basic Derivations
+
+`derive()` simplifies scenarios where several related metrics are derived from shared signals:
+
+```ts
+import { signal, derive } from 'ripple-reactive';
+
+const width = signal(100);
+const height = signal(50);
+
+const rect = derive({
+  area: () => width.value * height.value,
+  perimeter: () => 2 * (width.value + height.value),
+  isSquare: () => width.value === height.value,
+});
+
+console.log(rect.area.value);     // 5000
+console.log(rect.perimeter.value); // 300
+console.log(rect.isSquare.value);  // false
+
+width.value = 50;
+
+console.log(rect.area.value);     // 2500
+console.log(rect.isSquare.value);  // true
+```
+
+### Real-world Example: E-Commerce Cart Summary
+
+When managing shopping cart state, you often need several derived calculations such as item counts, subtotal, sales tax, and free shipping eligibility:
+
+```ts
+import { signal, derive } from 'ripple-reactive';
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
+const cart = signal<CartItem[]>([
+  { id: 'item-1', name: 'Mechanical Keyboard', price: 120, quantity: 1 },
+  { id: 'item-2', name: 'Desk Mat', price: 25, quantity: 2 },
+]);
+
+const TAX_RATE = 0.08;
+const FREE_SHIPPING_THRESHOLD = 150;
+
+// Derive all shopping cart totals simultaneously
+const { itemCount, subtotal, tax, total, qualifiesForFreeShipping } = derive({
+  itemCount: () =>
+    cart.value.reduce((sum, item) => sum + item.quantity, 0),
+  
+  subtotal: () =>
+    cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0),
+
+  tax: () => {
+    const sub = cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return Math.round(sub * TAX_RATE * 100) / 100;
+  },
+
+  total: () => {
+    const sub = cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return sub + Math.round(sub * TAX_RATE * 100) / 100;
+  },
+
+  qualifiesForFreeShipping: () => {
+    const sub = cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return sub >= FREE_SHIPPING_THRESHOLD;
+  },
+});
+
+console.log(`Items in cart: ${itemCount.value}`); // 3
+console.log(`Subtotal: $${subtotal.value}`);       // $170
+console.log(`Free Shipping: ${qualifiesForFreeShipping.value}`); // true
+```
+
+
+## Comparison: `derive()` vs Manual `computed()`
+
+`derive()` reduces boilerplate when declaring cohesive groups of computed values, allowing clean object destructuring while preserving fine-grained memoization.
+
+<Tabs items={['With derive()', 'Without derive()']}>
+  <Tab value="With derive()">
+```ts
+import { signal, derive } from 'ripple-reactive';
+
+const count = signal(10);
+
+// Single grouped declaration
+const { double, triple, isEven } = derive({
+  double: () => count.value * 2,
+  triple: () => count.value * 3,
+  isEven: () => count.value % 2 === 0,
+});
+```
+  </Tab>
+  <Tab value="Without derive()">
+```ts
+import { signal, computed } from 'ripple-reactive';
+
+const count = signal(10);
+
+// Multiple individual computed declarations
+const double = computed(() => count.value * 2);
+const triple = computed(() => count.value * 3);
+const isEven = computed(() => count.value % 2 === 0);
+```
+  </Tab>
+</Tabs>
+
+
+## Independent Evaluation & Memoization
+
+Under the hood, `derive()` wraps each property function with `computed()`. Each derived signal tracks its own dependencies independently:
+
+- Reading `rect.area.value` only evaluates `area`.
+- If an unrelated signal changes, neither `area` nor `perimeter` re-evaluates.
+- Derived signals are lazy: they do not compute until accessed.
+
+<Callout type="info">
+  Because `derive()` returns standard `ReadonlySignal` values, you can pass individual derived properties directly to `effect()`, `watch()`, or framework hooks like `useSignalValue()` in React.
+</Callout>
+
+<Callout type="warn">
+  Like all computed values in Ripple.js, derivation functions must be <strong>pure and synchronous</strong>. Never perform side-effects, mutate other signals, or schedule asynchronous tasks inside a derivation function.
+</Callout>

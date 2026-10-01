@@ -1,0 +1,117 @@
+---
+title: resource()
+description: Reactive asynchronous data fetching.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`resource()` provides a clean way to handle reactive asynchronous data loading. It automatically tracks a source signal, runs a fetcher function when the source changes, and exposes reactive `data`, `loading`, and `error` states.
+
+## Basic Usage
+
+Provide a `source` function that returns the parameters for your fetcher, and a `fetcher` function that returns a Promise.
+
+```ts
+import { signal, resource, effect } from 'ripple-reactive';
+
+const userId = signal(1);
+
+const userResource = resource(
+  () => userId.value,
+  async (id) => {
+    const res = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
+    if (!res.ok) throw new Error('Failed to fetch user');
+    return res.json();
+  }
+);
+
+effect(() => {
+  if (userResource.loading.value) {
+    console.log('Loading user...');
+  } else if (userResource.error.value) {
+    console.error('Error:', userResource.error.value.message);
+  } else {
+    console.log('User loaded:', userResource.data.value?.name);
+  }
+});
+
+// Changing the source signal automatically triggers a refetch
+userId.value = 2;
+```
+
+## Providing Initial Value
+
+You can provide an `initialValue` to avoid showing a loading state if you already have the data locally or from Server-Side Rendering (SSR).
+
+```ts
+const userResource = resource(
+  () => userId.value,
+  fetchUser,
+  { initialValue: { name: 'Local User' } }
+);
+
+console.log(userResource.data.value.name); // 'Local User'
+```
+
+## Manual Refetching
+
+Sometimes you need to refresh the data even if the source hasn't changed. You can use the `.refetch()` method on the returned resource object.
+
+```ts
+import { signal, resource } from 'ripple-reactive';
+
+const currentFolder = signal('inbox');
+
+const emails = resource(
+  () => currentFolder.value,
+  async (folder) => fetchEmails(folder)
+);
+
+// Manually trigger a refresh (e.g., when clicking a "Refresh" button)
+document.getElementById('refresh-btn').addEventListener('click', () => {
+  emails.refetch();
+});
+```
+
+## Real-world Example: Search-as-you-type
+
+Combining `resource` with a debounced signal creates an elegant search implementation.
+
+```ts
+import { signal, resource, debouncedSignal } from 'ripple-reactive';
+
+const searchInput = signal('');
+// Only update the actual query after 300ms of no typing
+const debouncedQuery = debouncedSignal(searchInput.value, 300);
+
+const searchResults = resource(
+  () => debouncedQuery.value,
+  async (query) => {
+    if (!query) return [];
+    const res = await fetch(`/api/search?q=${query}`);
+    return res.json();
+  },
+  { initialValue: [] }
+);
+```
+
+## Signatures
+
+```ts
+interface Resource<T> {
+  readonly data: ReadonlySignal<T | undefined>;
+  readonly loading: ReadonlySignal<boolean>;
+  readonly error: ReadonlySignal<Error | null>;
+  refetch(): void;
+}
+
+interface ResourceOptions {
+  initialValue?: any;
+}
+
+function resource<S, T>(
+  source: () => S,
+  fetcher: (source: S) => Promise<T>,
+  options?: ResourceOptions
+): Resource<T>;
+```

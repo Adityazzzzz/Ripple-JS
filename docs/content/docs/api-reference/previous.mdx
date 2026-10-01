@@ -1,0 +1,158 @@
+---
+title: previous()
+description: Track the previous value of a signal. Returns a ReadonlySignal that always holds the value before the most recent change.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+Tracks the previous value of a reactive signal or computed value. It returns a `ReadonlySignal` that always holds the value the source held prior to its most recent mutation.
+
+```ts
+function previous<T>(
+  source: Signal<T> | ReadonlySignal<T>
+): ReadonlySignal<T | undefined>;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `source` | `Signal<T> \| ReadonlySignal<T>` | The signal or computed value whose prior value you want to observe. |
+
+### Returns
+
+Returns a `ReadonlySignal<T | undefined>` that holds the value before the latest change. On initial setup, its value is `undefined` (or the initial value once initialized).
+
+
+## Usage
+
+### Route Navigation Tracking
+
+`previous()` makes it straightforward to inspect transitions, such as navigating between URL paths:
+
+```ts
+import { signal, previous, effect } from 'ripple-reactive';
+
+const route = signal('/home');
+const prevRoute = previous(route);
+
+effect(() => {
+  console.log(`Navigated from ${prevRoute.value} to ${route.value}`);
+});
+
+route.value = '/about';
+// â†’ "Navigated from /home to /about"
+
+route.value = '/dashboard';
+// â†’ "Navigated from /about to /dashboard"
+```
+
+### Numerical Trends and Deltas
+
+Use `previous()` to determine whether numerical values (such as prices, sensor readings, or game scores) are increasing, decreasing, or steady:
+
+```ts
+import { signal, previous, computed } from 'ripple-reactive';
+
+const stockPrice = signal(150.00);
+const lastPrice = previous(stockPrice);
+
+// Derive trend indicator
+const priceTrend = computed(() => {
+  const prev = lastPrice.value;
+  const current = stockPrice.value;
+
+  if (prev === undefined || prev === current) {
+    return 'unchanged';
+  }
+  return current > prev ? 'rising' : 'falling';
+});
+
+// Compute exact delta
+const priceDelta = computed(() => {
+  const prev = lastPrice.value;
+  return prev !== undefined ? stockPrice.value - prev : 0;
+});
+
+stockPrice.value = 158.50;
+console.log(priceTrend.value); // 'rising'
+console.log(priceDelta.value); // +8.5
+
+stockPrice.value = 152.00;
+console.log(priceTrend.value); // 'falling'
+console.log(priceDelta.value); // -6.5
+```
+
+### Slide Direction in UI Carousel / Tabs
+
+When animating step transitions or carousel sliders, knowing whether the user navigated forward or backward allows choosing the right animation direction:
+
+```ts
+import { signal, previous, computed } from 'ripple-reactive';
+
+const activeStep = signal(1);
+const previousStep = previous(activeStep);
+
+const slideDirection = computed<'forward' | 'backward' | 'none'>(() => {
+  const prev = previousStep.value;
+  const current = activeStep.value;
+
+  if (prev === undefined || prev === current) return 'none';
+  return current > prev ? 'forward' : 'backward';
+});
+
+console.log(slideDirection.value); // 'none'
+
+activeStep.value = 2;
+console.log(slideDirection.value); // 'forward'
+
+activeStep.value = 1;
+console.log(slideDirection.value); // 'backward'
+```
+
+
+## Comparison: `previous()` vs `watch()`
+
+Both `previous()` and `watch()` give you access to previous values, but they serve different architectural roles:
+
+<Tabs items={['previous() Signal', 'watch() Callback']}>
+  <Tab value="previous() Signal">
+```ts
+import { signal, previous, computed } from 'ripple-reactive';
+
+const query = signal('');
+const prevQuery = previous(query);
+
+// Read reactive signal anywhere, anytime (e.g. in computed or UI)
+const hasQueryLengthened = computed(() => {
+  return query.value.length > (prevQuery.value?.length ?? 0);
+});
+```
+  </Tab>
+  <Tab value="watch() Callback">
+```ts
+import { signal, watch } from 'ripple-reactive';
+
+const query = signal('');
+
+// Callback-driven side-effect receiving (newVal, oldVal)
+watch(
+  () => query.value,
+  (current, prev) => {
+    if (prev !== undefined && current.length > prev.length) {
+      console.log('Query extended');
+    }
+  }
+);
+```
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+  Reactive State vs Side-Effect: Use `previous()` when other computed signals or UI components need to read the past value declaratively. Use [`watch()`](/docs/api-reference/watch) when you want to execute an imperative side-effect (like an animation kickoff or API call) at the moment of change.
+</Callout>
+
+<Callout type="warn">
+  The returned signal is strictly a `ReadonlySignal`. Attempting to assign directly to `.value` will throw an error in TypeScript and runtime checks. Its state is managed automatically by tracking changes to the original source signal.
+</Callout>

@@ -1,0 +1,198 @@
+---
+title: Rate Limiting
+description: Debounced and throttled reactive utilities for search, scroll, and resize handlers.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+High-frequency events like keystrokes, scroll movements, window resizing, and pointer tracking can trigger hundreds of reactive evaluations per second. Ripple.js provides three dedicated rate-limiting utilities to keep your applications responsive and prevent redundant workloads:
+
+- `debouncedEffect()`: Delays effect execution until state has settled for a given duration.
+- `debouncedSignal()`: A signal whose reactive updates are delayed, featuring an `.immediate` accessor for responsive UI controls.
+- `throttledEffect()`: Caps effect execution rate to at most once per time window, with automatic trailing execution.
+
+```ts
+function debouncedEffect(fn: () => void, delay: number): EffectHandle;
+function debouncedSignal<T>(initialValue: T, delay: number): Signal<T>;
+function throttledEffect(fn: () => void, interval: number): EffectHandle;
+```
+
+
+## `debouncedEffect()`
+
+`debouncedEffect` behaves like standard `effect()`, but pauses execution until `delay` milliseconds have elapsed without any new dependency changes. If dependencies mutate multiple times within that window, the timer resets and only the final value executes.
+
+```ts
+function debouncedEffect(fn: () => void, delay: number): EffectHandle;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `fn` | `() => void` | Side-effect function to execute once dependencies settle. |
+| `delay` | `number` | Inactivity threshold in milliseconds. |
+
+### Real-world Example: Search-as-you-type
+
+Trigger network search requests only after the user stops typing:
+
+```ts
+import { signal, debouncedEffect } from 'ripple-reactive';
+
+const query = signal('');
+const searchResults = signal<string[]>([]);
+const isSearching = signal(false);
+
+// Waits 300ms after the last character typed before invoking search
+const stopSearch = debouncedEffect(async () => {
+  const q = query.value.trim();
+  if (q.length < 2) {
+    searchResults.value = [];
+    return;
+  }
+
+  isSearching.value = true;
+  try {
+    const response = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+    searchResults.value = await response.json();
+  } finally {
+    isSearching.value = false;
+  }
+}, 300);
+
+// Rapid keystrokes within 300ms will only trigger a single fetch
+query.value = 'r';
+query.value = 'ri';
+query.value = 'rip';
+query.value = 'ripple';
+
+// Cancel the debounced effect when unmounting
+stopSearch();
+```
+
+
+## `debouncedSignal()`
+
+`debouncedSignal` creates a dual-speed reactive signal designed specifically for inputs and controlled fields:
+
+- Writing to `.value` instantly updates the internal immediate state and schedules a debounced update for downstream reactive readers.
+- Reading `.value` subscribes to the debounced, settled value.
+- Reading `.immediate` provides zero-latency access to the raw, latest value for fluid typing and rendering.
+
+```ts
+function debouncedSignal<T>(initialValue: T, delay: number): Signal<T>;
+```
+
+### Properties
+
+| Property | Type | Description |
+| -------- | ---- | ----------- |
+| `value` | `T` | Getter returns the debounced value; setter updates the raw value and queues debounce. |
+| `immediate` | `T` | Synchronous getter for the immediate, non-debounced value (ideal for `<input>` bindings). |
+| `peek()` | `() => T` | Reads the current debounced value without subscribing. |
+
+### Real-world Example: Form Input with Instant UI and Debounced Validation
+
+```ts
+import { debouncedSignal, effect } from 'ripple-reactive';
+
+const username = debouncedSignal('', 500);
+
+// 1. Instant UI Feedback: shows live character counter without debounce lag
+effect(() => {
+  console.log(`Characters entered: ${username.immediate.length}`);
+});
+
+// 2. Debounced Action: checks availability with the backend only after 500ms
+effect(async () => {
+  const name = username.value; // Subscribes to debounced value
+  if (name.length < 3) return;
+
+  const res = await fetch(`/api/check-username?name=${encodeURIComponent(name)}`);
+  const { available } = await res.json();
+  console.log(`Username "${name}" available: ${available}`);
+});
+
+// User types rapidly
+username.value = 'a';
+username.value = 'ad';
+username.value = 'adi';
+username.value = 'aditya';
+
+// Immediate logs fire for every character: 1 -> 2 -> 3 -> 6
+// The debounced effect fires exactly once 500ms later with "aditya"
+```
+
+
+## `throttledEffect()`
+
+`throttledEffect` ensures an effect executes at most once every `interval` milliseconds. Unlike debounce (which waits for inactivity), throttling runs the effect periodically during continuous activity and guarantees a trailing execution so the final state is never skipped.
+
+```ts
+function throttledEffect(fn: () => void, interval: number): EffectHandle;
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `fn` | `() => void` | Side-effect function to execute periodically. |
+| `interval` | `number` | Minimum duration between executions in milliseconds. |
+
+### Real-world Example: Scroll Position and Document Minimap
+
+```ts
+import { signal, throttledEffect } from 'ripple-reactive';
+
+const scrollY = signal(0);
+const scrollProgress = signal(0);
+
+// Window scroll event pushes raw coordinates
+window.addEventListener('scroll', () => {
+  scrollY.value = window.scrollY;
+});
+
+// Caps progress updates to at most 10 times per second (100ms interval)
+const stopScrollObserver = throttledEffect(() => {
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = maxScroll > 0 ? (scrollY.value / maxScroll) * 100 : 0;
+  
+  scrollProgress.value = Math.min(100, Math.max(0, Math.round(progress)));
+  console.log(`Scroll progress: ${scrollProgress.value}%`);
+}, 100);
+
+// Clean up listener and effect on teardown
+stopScrollObserver();
+```
+
+
+## Choosing the Right Strategy
+
+<Tabs items={['Comparison Table', 'Decision Guide']}>
+  <Tab value="Comparison Table">
+| Utility | Mechanism | Ideal Use Cases |
+| :--- | :--- | :--- |
+| `debouncedEffect` | Waits until changes stop for `delay` ms | Search-as-you-type, auto-save to disk/cloud, window resize completion |
+| `debouncedSignal` | Buffers signal writes; exposes `.immediate` | Search inputs, filter fields, sliders needing immediate visual feedback |
+| `throttledEffect` | Fires at fixed `interval` rate + trailing call | Scroll observers, canvas rendering, mouse tracking, drag-and-drop |
+  </Tab>
+  <Tab value="Decision Guide">
+
+Use `debouncedEffect` when you want to execute an action only after the user finishes interacting (e.g. typing a search query or editing a form).
+
+Use `debouncedSignal` when you have a piece of state bound to an input that needs immediate UI responsiveness (`.immediate`) while delaying downstream computations or network calls (`.value`).
+
+Use `throttledEffect` when events fire continuously (like scrolling or dragging) and you want steady intermediate updates capped at a maximum frequency.
+
+  </Tab>
+</Tabs>
+
+<Callout type="info">
+  Trailing Execution Guarantee: Both `debouncedEffect` and `throttledEffect` guarantee that the final settled value of your signals will be executed. In `throttledEffect`, if a signal changes midway through an active interval, a trailing execution is automatically scheduled for the end of the interval.
+</Callout>
+
+<Callout type="warn">
+  Always invoke the returned `EffectHandle` function (`stop()`) when cleaning up components or event listeners. This cancels any active internal `setTimeout` timers and prevents memory leaks.
+</Callout>
